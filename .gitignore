@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# captured form submissions
+.data/
+
+# runtime uploads (admin-published content)
+/public/uploads/
