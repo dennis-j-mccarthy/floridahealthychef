@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { mkdir, writeFile, unlink } from "fs/promises";
+import { writeFile, unlink } from "fs/promises";
 import { execFile } from "child_process";
 import { promisify } from "util";
 import path from "path";
@@ -7,13 +7,13 @@ import os from "os";
 import { imageSize } from "image-size";
 import { isAdminRequest } from "@/lib/adminAuth";
 import { prisma } from "@/lib/db";
+import { deleteUpload, saveUpload } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
 
 const execFileAsync = promisify(execFile);
 
 const MAX_BYTES = 15 * 1024 * 1024; // ~15MB
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "gallery");
 
 const ALLOWED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "heic", "heif"]);
 const ALLOWED_MIME_PREFIXES = [
@@ -83,13 +83,10 @@ export async function POST(request: Request) {
   const buffer = Buffer.from(await file.arrayBuffer());
   const isHeic = ext === "heic" || ext === "heif" || mime.includes("hei");
 
-  await mkdir(UPLOAD_DIR, { recursive: true });
-
   const stamp = Date.now();
   const base = sanitizeBaseName(originalName);
   const finalExt = isHeic ? "jpg" : ext === "jpeg" ? "jpg" : ext;
   const fileName = `${stamp}-${base}.${finalExt}`;
-  const finalPath = path.join(UPLOAD_DIR, fileName);
 
   let finalBuffer = buffer;
 
@@ -132,9 +129,12 @@ export async function POST(request: Request) {
     );
   }
 
-  await writeFile(finalPath, finalBuffer);
-
-  const src = `/uploads/gallery/${fileName}`;
+  const src = await saveUpload(
+    "gallery",
+    fileName,
+    finalBuffer,
+    finalExt === "png" ? "image/png" : finalExt === "webp" ? "image/webp" : "image/jpeg"
+  );
 
   try {
     const [, item] = await prisma.$transaction([
@@ -145,8 +145,8 @@ export async function POST(request: Request) {
     ]);
     return NextResponse.json({ item }, { status: 200 });
   } catch (err) {
-    // Roll back the file if the DB write failed.
-    await unlink(finalPath).catch(() => {});
+    // Roll back the stored file if the DB write failed.
+    await deleteUpload(src);
     console.error("Gallery upload failed:", err);
     return NextResponse.json(
       { error: "Something went wrong saving the photo. Please try again." },

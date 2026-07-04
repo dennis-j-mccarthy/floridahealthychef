@@ -1,5 +1,5 @@
-import { mkdir, writeFile } from "fs/promises";
 import path from "path";
+import { saveUpload } from "@/lib/storage";
 
 export const ALLOWED_IMAGE_TYPES: Record<string, string> = {
   "image/jpeg": ".jpg",
@@ -22,15 +22,11 @@ export function sanitizeFileName(name: string): string {
   return `${stem || "image"}${ext.toLowerCase()}`;
 }
 
-/** Save an uploaded image to public/uploads/blog and return its public path. */
+/** Save an uploaded image (Blob in production, public/uploads locally). */
 export async function saveBlogImage(file: File): Promise<string> {
-  const dir = path.join(process.cwd(), "public", "uploads", "blog");
-  await mkdir(dir, { recursive: true });
-
   const fallbackExt = ALLOWED_IMAGE_TYPES[file.type] ?? "";
   const safeName = sanitizeFileName(file.name || `image${fallbackExt}`);
   const fileName = `${Date.now()}-${safeName}`;
   const bytes = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(dir, fileName), bytes);
-  return `/uploads/blog/${fileName}`;
+  return saveUpload("blog", fileName, bytes, file.type || "image/jpeg");
 }

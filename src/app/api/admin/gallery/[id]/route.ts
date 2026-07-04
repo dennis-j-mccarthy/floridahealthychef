@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { unlink } from "fs/promises";
-import path from "path";
 import { isAdminRequest } from "@/lib/adminAuth";
 import { prisma } from "@/lib/db";
+import { deleteUpload } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
 
@@ -90,17 +89,9 @@ export async function DELETE(_request: Request, { params }: Params) {
     }),
   ]);
 
-  // Only remove files we created under public/uploads/gallery — never touch
-  // the original curated set in public/images/gallery.
-  if (item.src.startsWith("/uploads/gallery/")) {
-    const uploadsRoot = path.join(process.cwd(), "public", "uploads", "gallery");
-    const filePath = path.resolve(
-      path.join(process.cwd(), "public", ...item.src.split("/").filter(Boolean))
-    );
-    if (filePath.startsWith(uploadsRoot + path.sep)) {
-      await unlink(filePath).catch(() => {});
-    }
-  }
+  // Only removes files we created (Blob or public/uploads) — never the
+  // original curated set in public/images/gallery.
+  await deleteUpload(item.src);
 
   return NextResponse.json({ ok: true });
 }
