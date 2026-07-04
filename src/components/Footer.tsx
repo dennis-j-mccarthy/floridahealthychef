@@ -54,6 +54,13 @@ export default function Footer() {
           />
           <p className="text-base font-light text-dark">
             Copyright &copy; Beth McCarthy, {new Date().getFullYear()}
+            <a
+              href="/admin"
+              className="ml-3 text-xs font-light text-gray-light/60 transition-colors hover:text-gray"
+              aria-label="Site admin"
+            >
+              admin
+            </a>
           </p>
         </div>
       </div>
