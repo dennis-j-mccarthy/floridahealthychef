@@ -56,7 +56,7 @@ export default function Footer() {
             Copyright &copy; Beth McCarthy, {new Date().getFullYear()}
             <a
               href="/admin"
-              className="ml-3 text-xs font-light text-gray-light/60 transition-colors hover:text-gray"
+              className="ml-4 text-sm font-light text-gray-light transition-colors hover:text-dark"
               aria-label="Site admin"
             >
               admin
