@@ -40,6 +40,45 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // JSON body = the photo was already uploaded directly to Vercel Blob by
+  // the browser; we just record it (measuring dimensions if not provided).
+  if ((request.headers.get("content-type") ?? "").includes("application/json")) {
+    const body = await request.json().catch(() => null);
+    const src = String(body?.src ?? "");
+    const caption = String(body?.caption ?? "").trim();
+    let width = Number(body?.width) || 0;
+    let height = Number(body?.height) || 0;
+
+    if (!/^https:\/\/[^/]+\.blob\.vercel-storage\.com\//.test(src)) {
+      return NextResponse.json(
+        { error: "Invalid upload reference." },
+        { status: 400 }
+      );
+    }
+    if (!width || !height) {
+      try {
+        const res = await fetch(src);
+        const dims = imageSize(Buffer.from(await res.arrayBuffer()));
+        if (!dims.width || !dims.height) throw new Error("no dimensions");
+        const rotated =
+          typeof dims.orientation === "number" && dims.orientation >= 5;
+        width = rotated ? dims.height : dims.width;
+        height = rotated ? dims.width : dims.height;
+      } catch {
+        width = 1200;
+        height = 1600;
+      }
+    }
+
+    const [, item] = await prisma.$transaction([
+      prisma.galleryItem.updateMany({ data: { position: { increment: 1 } } }),
+      prisma.galleryItem.create({
+        data: { src, caption, width, height, position: 1 },
+      }),
+    ]);
+    return NextResponse.json({ item }, { status: 200 });
+  }
+
   let formData: FormData;
   try {
     formData = await request.formData();

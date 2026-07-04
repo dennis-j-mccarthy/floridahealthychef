@@ -69,18 +69,59 @@ export default function GalleryManager({
     setPreviewUrl(isHeic ? null : URL.createObjectURL(f));
   }
 
+  function measureImage(f: File): Promise<{ w: number; h: number }> {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(f);
+      const img = new window.Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve({ w: img.naturalWidth, h: img.naturalHeight });
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("cannot decode"));
+      };
+      img.src = url;
+    });
+  }
+
   async function publish() {
     if (!file || uploading) return;
     setUploading(true);
     setNotice(null);
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("caption", caption);
-      const res = await fetch("/api/admin/gallery", {
-        method: "POST",
-        body: fd,
-      });
+      let res: Response;
+
+      // Preferred path: upload the photo straight from the browser to Vercel
+      // Blob (no serverless body-size limit), then record it. Falls back to
+      // the classic multipart route for local dev and HEIC photos.
+      try {
+        const { upload } = await import("@vercel/blob/client");
+        const blob = await upload(`gallery/${file.name || "photo.jpg"}`, file, {
+          access: "public",
+          handleUploadUrl: "/api/admin/gallery/client-upload",
+        });
+        const dims = await measureImage(file).catch(() => null);
+        res = await fetch("/api/admin/gallery", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            src: blob.url,
+            caption,
+            width: dims?.w ?? 0,
+            height: dims?.h ?? 0,
+          }),
+        });
+      } catch {
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("caption", caption);
+        res = await fetch("/api/admin/gallery", {
+          method: "POST",
+          body: fd,
+        });
+      }
+
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         setNotice({
