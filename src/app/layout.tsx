@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Lato, DM_Sans, Great_Vibes, Corinthia, Josefin_Sans } from "next/font/google";
+import { Lato, DM_Sans, Great_Vibes, Corinthia, Josefin_Sans, Outfit } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -35,6 +35,12 @@ const josefinSans = Josefin_Sans({
   weight: ["200", "300", "400", "500", "600", "700"],
 });
 
+const outfit = Outfit({
+  variable: "--font-outfit",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
 export const metadata: Metadata = {
   title: {
     default: "Beautiful Foods by Beth | Southwest Florida's Healthiest Personal Chef",
@@ -52,7 +58,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${lato.variable} ${dmSans.variable} ${greatVibes.variable} ${corinthia.variable} ${josefinSans.variable} antialiased`}
+        className={`${lato.variable} ${dmSans.variable} ${greatVibes.variable} ${corinthia.variable} ${josefinSans.variable} ${outfit.variable} antialiased`}
       >
         <Header />
         <main>{children}</main>

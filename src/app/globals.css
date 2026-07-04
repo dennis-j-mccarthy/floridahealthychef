@@ -36,6 +36,17 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 400;
 }
 
+/* Admin area uses Outfit for headlines instead of the script font */
+.admin-area h1,
+.admin-area h2,
+.admin-area h3,
+.admin-area h4,
+.admin-area h5,
+.admin-area h6 {
+  font-family: var(--font-outfit), sans-serif;
+  font-weight: 600;
+}
+
 h2 {
   font-size: 2.75rem;
   line-height: 1.2;
