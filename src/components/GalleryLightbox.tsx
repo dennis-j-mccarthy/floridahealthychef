@@ -66,7 +66,7 @@ export default function GalleryLightbox({ images }: { images: GalleryImage[] }) 
             />
             {img.caption ? (
               <span
-                className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-dark/70 to-transparent px-4 pb-3 pt-10 text-left text-sm font-light text-white opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100"
+                className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent px-4 pb-3 pt-14 text-left text-sm font-normal text-white opacity-0 transition-opacity duration-300 [text-shadow:0_1px_3px_rgba(0,0,0,0.8)] group-hover:opacity-100 group-focus-visible:opacity-100"
                 aria-hidden="true"
               >
                 {img.caption}

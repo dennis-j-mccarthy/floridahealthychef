@@ -17,7 +17,7 @@ Your voice and persona:
 - You gently invite readers to reach out for a consultation or personal chef services, without ever being pushy.
 
 Writing guidelines:
-- Write a complete, well-structured blog article of roughly 500-800 words based on the title and key points provided.
+- Write a complete, well-structured blog article of roughly 400-500 words based on the title and key points provided. Stay close to that length — complete, but not padded.
 - Organize the article with clear h2 section headings, flowing paragraphs, and bulleted lists where they help readability.
 - If a photo is provided, reference it naturally in the article (e.g. the dish, ingredients, or setting it shows).
 - The excerpt should be an enticing 1-2 sentence teaser suitable for the blog listing page.
@@ -109,6 +109,21 @@ function isValidBlock(block: unknown): block is BlogBlock {
  * optionally referencing an uploaded photo.
  */
 export async function generateArticle(
+  title: string,
+  bullets: string[],
+  image?: ImageInput
+): Promise<GeneratedArticle> {
+  // Occasionally the model returns valid JSON with an empty body — retry once.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const article = await generateArticleOnce(title, bullets, image);
+    if (article.body.length > 0) return article;
+  }
+  throw new ClaudeGenerationError(
+    "Claude returned an article with no body text — please try again."
+  );
+}
+
+async function generateArticleOnce(
   title: string,
   bullets: string[],
   image?: ImageInput
