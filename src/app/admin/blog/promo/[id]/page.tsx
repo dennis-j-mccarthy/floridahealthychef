@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { isAdminRequest } from "@/lib/adminAuth";
 import { prisma } from "@/lib/db";
-import type { PromoKitContent } from "@/lib/claude";
+import { normalizePromoKit, type PromoKitContent } from "@/lib/claude";
 import PromoKitView from "./PromoKitView";
 
 export const metadata: Metadata = {
@@ -41,7 +41,8 @@ export default async function PromoKitPage({ params }: Props) {
   let initialKit: PromoKitContent | null = null;
   if (kitRow) {
     try {
-      initialKit = JSON.parse(kitRow.content) as PromoKitContent;
+      // Normalize old single-variant kits to the current arrays-of-variants shape.
+      initialKit = normalizePromoKit(JSON.parse(kitRow.content));
     } catch {
       initialKit = null;
     }

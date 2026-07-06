@@ -5,6 +5,7 @@ import { blocksToText } from "@/app/admin/blog/blocks";
 import {
   ClaudeGenerationError,
   generatePromoKit,
+  normalizePromoKit,
   type PromoKitContent,
 } from "@/lib/claude";
 import type { BlogBlock } from "@/data/blog";
@@ -39,10 +40,14 @@ export async function GET(_request: Request, { params }: Params) {
     return NextResponse.json({ ok: true, kit: null });
   }
 
-  let content: PromoKitContent;
+  let content: PromoKitContent | null;
   try {
-    content = JSON.parse(kit.content) as PromoKitContent;
+    // Normalize old single-variant kits to the current arrays-of-variants shape.
+    content = normalizePromoKit(JSON.parse(kit.content));
   } catch {
+    content = null;
+  }
+  if (!content) {
     return NextResponse.json({ ok: true, kit: null });
   }
 

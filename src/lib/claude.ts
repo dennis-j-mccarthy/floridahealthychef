@@ -218,12 +218,18 @@ async function generateArticleOnce(
 /* Promo kit generation                                               */
 /* ------------------------------------------------------------------ */
 
+export type InstagramVariant = { caption: string; hashtags: string[] };
+export type FacebookVariant = { post: string };
+export type XVariant = { post: string };
+
 export type PromoKitContent = {
-  instagram: { caption: string; hashtags: string[] };
-  facebook: { post: string };
-  x: { post: string };
+  /** Exactly 3 variants when freshly generated; ≥1 after normalizing old kits. */
+  instagram: InstagramVariant[];
+  facebook: FacebookVariant[];
+  x: XVariant[];
   email: {
-    subject: string;
+    /** 3 subject line options (1 after normalizing old kits). */
+    subjects: string[];
     preheader: string;
     greeting: string;
     blocks: BlogBlock[];
@@ -252,11 +258,16 @@ Content rules:
 - Base everything ONLY on the article provided — never invent facts, recipes, claims, or details that are not in the article.
 - Include the article's URL where it reads naturally (Facebook and X posts, email CTA). Instagram captions should not include raw URLs — say "link in bio" style phrasing instead if a pointer is needed.
 
+Variant rules:
+- For Instagram, Facebook, and X, write EXACTLY 3 variant posts each, and for the email write EXACTLY 3 subject line options.
+- The 3 variants for each platform must be genuinely different ANGLES on the article — not rewordings of the same post. For example: one sensory/appetite-led (the taste, the plate, the craving), one health-benefit-led (what it does for the body, food as medicine), and one local-community-led (Southwest Florida, seasonality, the communities you serve). Choose the 3 angles that best fit the article; each variant should feel like a distinct reason to click.
+- Every variant must still stand fully on its own and follow the channel guidelines below.
+
 Channel guidelines:
-- Instagram: an engaging caption with tasteful, sparing emoji and short scannable lines, plus 8-12 hashtags mixing brand/wellness tags (like #foodasmedicine, #healthyeating, #personalchef) with local Southwest Florida tags (like #naplesflorida, #bonitasprings, #swfl).
-- Facebook: a friendly, slightly longer post of 2-3 short paragraphs that ends with a clear call to action to read the article, including the article link.
-- X: a single punchy post that MUST be under 280 characters total, including the article URL. The URL is long, so keep your own words very short — one or two brief sentences. Count carefully; the character budget for your text will be given with the article.
-- Email: a short newsletter promoting the article — a compelling subject line, a preheader (the preview text after the subject), a warm greeting, 2-4 short body blocks (paragraphs, optional h2 heading or bulleted list) teasing the article's value without repeating it wholesale, a warm signoff (e.g. "With love from my kitchen, Beth"), and a call-to-action button labeled invitingly that links to the article URL.`;
+- Instagram: an engaging caption with tasteful, sparing emoji and short scannable lines, plus 8-12 hashtags mixing brand/wellness tags (like #foodasmedicine, #healthyeating, #personalchef) with local Southwest Florida tags (like #naplesflorida, #bonitasprings, #swfl). Each of the 3 variants needs its own caption and its own hashtag set (they may overlap where natural).
+- Facebook: a friendly, slightly longer post of 2-3 short paragraphs that ends with a clear call to action to read the article, including the article link. Each of the 3 variants includes the link.
+- X: a single punchy post that MUST be under 280 characters total, including the article URL. The URL is long, so keep your own words very short — one or two brief sentences. Count carefully; the character budget for your text will be given with the article. ALL 3 variants must each be under the limit.
+- Email: a short newsletter promoting the article — 3 compelling subject line options (each a different angle, matching the variant rules), a single preheader (the preview text after the subject), a warm greeting, 2-4 short body blocks (paragraphs, optional h2 heading or bulleted list) teasing the article's value without repeating it wholesale, a warm signoff (e.g. "With love from my kitchen, Beth"), and a call-to-action button labeled invitingly that links to the article URL. Only the subject line has variants — the body is shared.`;
 
 const PROMO_BLOCKS_SCHEMA = {
   type: "array",
@@ -305,53 +316,73 @@ const PROMO_KIT_SCHEMA = {
   required: ["instagram", "facebook", "x", "email"],
   properties: {
     instagram: {
-      type: "object",
-      additionalProperties: false,
-      required: ["caption", "hashtags"],
-      properties: {
-        caption: {
-          type: "string",
-          description:
-            "Instagram caption with tasteful emoji and short lines. No raw URLs.",
-        },
-        hashtags: {
-          type: "array",
-          items: { type: "string" },
-          description:
-            "8-12 hashtags (each starting with #), mixing brand/wellness and local Southwest Florida tags.",
+      type: "array",
+      description:
+        "EXACTLY 3 Instagram caption variants, each a genuinely different angle (e.g. sensory/appetite-led, health-benefit-led, local-community-led).",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["caption", "hashtags"],
+        properties: {
+          caption: {
+            type: "string",
+            description:
+              "Instagram caption with tasteful emoji and short lines. No raw URLs.",
+          },
+          hashtags: {
+            type: "array",
+            items: { type: "string" },
+            description:
+              "8-12 hashtags (each starting with #), mixing brand/wellness and local Southwest Florida tags.",
+          },
         },
       },
     },
     facebook: {
-      type: "object",
-      additionalProperties: false,
-      required: ["post"],
-      properties: {
-        post: {
-          type: "string",
-          description:
-            "Facebook post of 2-3 short paragraphs ending with a call to action that includes the article link.",
+      type: "array",
+      description:
+        "EXACTLY 3 Facebook post variants, each a genuinely different angle — not rewordings.",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["post"],
+        properties: {
+          post: {
+            type: "string",
+            description:
+              "Facebook post of 2-3 short paragraphs ending with a call to action that includes the article link.",
+          },
         },
       },
     },
     x: {
-      type: "object",
-      additionalProperties: false,
-      required: ["post"],
-      properties: {
-        post: {
-          type: "string",
-          description:
-            "A single X (Twitter) post under 280 characters total, including the article URL.",
+      type: "array",
+      description:
+        "EXACTLY 3 X (Twitter) post variants, each a genuinely different angle, and EACH under 280 characters total including the article URL.",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["post"],
+        properties: {
+          post: {
+            type: "string",
+            description:
+              "A single X (Twitter) post under 280 characters total, including the article URL.",
+          },
         },
       },
     },
     email: {
       type: "object",
       additionalProperties: false,
-      required: ["subject", "preheader", "greeting", "blocks", "signoff", "cta"],
+      required: ["subjects", "preheader", "greeting", "blocks", "signoff", "cta"],
       properties: {
-        subject: { type: "string", description: "Email subject line." },
+        subjects: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "EXACTLY 3 email subject line options, each a genuinely different angle.",
+        },
         preheader: {
           type: "string",
           description: "Preview text shown after the subject in inboxes.",
@@ -386,40 +417,30 @@ const PROMO_KIT_SCHEMA = {
   },
 } as const;
 
-function isValidPromoKit(value: unknown): value is PromoKitContent {
+function isInstagramVariant(value: unknown): value is InstagramVariant {
   if (typeof value !== "object" || value === null) return false;
-  const kit = value as Record<string, unknown>;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.caption === "string" &&
+    Array.isArray(v.hashtags) &&
+    v.hashtags.every((h) => typeof h === "string")
+  );
+}
 
-  const instagram = kit.instagram as Record<string, unknown> | undefined;
+function isPostVariant(value: unknown): value is { post: string } {
+  if (typeof value !== "object" || value === null) return false;
+  return typeof (value as Record<string, unknown>).post === "string";
+}
+
+function isValidEmail(
+  value: unknown
+): value is PromoKitContent["email"] {
+  if (typeof value !== "object" || value === null) return false;
+  const email = value as Record<string, unknown>;
   if (
-    typeof instagram !== "object" ||
-    instagram === null ||
-    typeof instagram.caption !== "string" ||
-    !Array.isArray(instagram.hashtags) ||
-    !instagram.hashtags.every((h) => typeof h === "string")
-  ) {
-    return false;
-  }
-
-  const facebook = kit.facebook as Record<string, unknown> | undefined;
-  if (
-    typeof facebook !== "object" ||
-    facebook === null ||
-    typeof facebook.post !== "string"
-  ) {
-    return false;
-  }
-
-  const x = kit.x as Record<string, unknown> | undefined;
-  if (typeof x !== "object" || x === null || typeof x.post !== "string") {
-    return false;
-  }
-
-  const email = kit.email as Record<string, unknown> | undefined;
-  if (
-    typeof email !== "object" ||
-    email === null ||
-    typeof email.subject !== "string" ||
+    !Array.isArray(email.subjects) ||
+    email.subjects.length === 0 ||
+    !email.subjects.every((s) => typeof s === "string") ||
     typeof email.preheader !== "string" ||
     typeof email.greeting !== "string" ||
     typeof email.signoff !== "string" ||
@@ -429,16 +450,90 @@ function isValidPromoKit(value: unknown): value is PromoKitContent {
     return false;
   }
   const cta = email.cta as Record<string, unknown> | undefined;
+  return (
+    typeof cta === "object" &&
+    cta !== null &&
+    typeof cta.label === "string" &&
+    typeof cta.url === "string"
+  );
+}
+
+/**
+ * Validate a promo kit. `exactVariants` (used at generation time) requires
+ * every variant array — and the email subjects — to have exactly that many
+ * entries; when omitted, any non-empty arrays are accepted (normalized old
+ * kits have 1 of each).
+ */
+function isValidPromoKit(
+  value: unknown,
+  exactVariants?: number
+): value is PromoKitContent {
+  if (typeof value !== "object" || value === null) return false;
+  const kit = value as Record<string, unknown>;
+
+  const lengthOk = (arr: unknown[]) =>
+    exactVariants === undefined
+      ? arr.length > 0
+      : arr.length === exactVariants;
+
   if (
-    typeof cta !== "object" ||
-    cta === null ||
-    typeof cta.label !== "string" ||
-    typeof cta.url !== "string"
+    !Array.isArray(kit.instagram) ||
+    !lengthOk(kit.instagram) ||
+    !kit.instagram.every(isInstagramVariant)
   ) {
     return false;
   }
-
+  if (
+    !Array.isArray(kit.facebook) ||
+    !lengthOk(kit.facebook) ||
+    !kit.facebook.every(isPostVariant)
+  ) {
+    return false;
+  }
+  if (!Array.isArray(kit.x) || !lengthOk(kit.x) || !kit.x.every(isPostVariant)) {
+    return false;
+  }
+  if (!isValidEmail(kit.email)) return false;
+  if (
+    exactVariants !== undefined &&
+    (kit.email as PromoKitContent["email"]).subjects.length !== exactVariants
+  ) {
+    return false;
+  }
   return true;
+}
+
+/**
+ * Normalize a stored promo kit to the current multi-variant shape.
+ * Old kits (instagram/facebook/x as single objects, email with a single
+ * `subject`) become arrays of 1 + `subjects: [subject]`, so they keep
+ * rendering. Returns null if the value can't be normalized.
+ */
+export function normalizePromoKit(value: unknown): PromoKitContent | null {
+  if (typeof value !== "object" || value === null) return null;
+  const kit = value as Record<string, unknown>;
+
+  const toArray = (v: unknown): unknown[] =>
+    Array.isArray(v) ? v : v === undefined || v === null ? [] : [v];
+
+  let email = kit.email;
+  if (typeof email === "object" && email !== null) {
+    const e = email as Record<string, unknown>;
+    if (!Array.isArray(e.subjects) && typeof e.subject === "string") {
+      // Old shape: single `subject` string → `subjects: [subject]`.
+      const { subject, ...rest } = e;
+      email = { ...rest, subjects: [subject] };
+    }
+  }
+
+  const candidate = {
+    instagram: toArray(kit.instagram),
+    facebook: toArray(kit.facebook),
+    x: toArray(kit.x),
+    email,
+  };
+
+  return isValidPromoKit(candidate) ? candidate : null;
 }
 
 /**
@@ -448,10 +543,10 @@ function isValidPromoKit(value: unknown): value is PromoKitContent {
 export async function generatePromoKit(
   post: PromoKitInput
 ): Promise<PromoKitContent> {
-  // The X post has a hard 280-character limit — retry once if exceeded.
+  // X posts have a hard 280-character limit — retry once if any variant exceeds it.
   for (let attempt = 0; attempt < 2; attempt++) {
     const kit = await generatePromoKitOnce(post);
-    if (kit.x.post.length <= 280) return kit;
+    if (kit.x.every((variant) => variant.post.length <= 280)) return kit;
   }
   throw new ClaudeGenerationError(
     "Claude returned an X post over 280 characters — please try again."
@@ -464,12 +559,12 @@ async function generatePromoKitOnce(
   // Leave generous headroom under X's 280-character limit for the URL.
   const xTextBudget = Math.max(60, 280 - post.articleUrl.length - 40);
   const prompt = [
-    "Create the promo kit (Instagram, Facebook, X, and email) for this article.",
+    "Create the promo kit (Instagram, Facebook, X, and email) for this article — 3 variants per social platform and 3 email subject options, each variant a genuinely different angle.",
     "",
     `Title: ${post.title}`,
     `Category: ${post.category}`,
     `Article URL: ${post.articleUrl}`,
-    `X post character budget: the URL alone is ${post.articleUrl.length} characters, so the rest of your X post text must be at most ${xTextBudget} characters.`,
+    `X post character budget: the URL alone is ${post.articleUrl.length} characters, so the rest of each X post variant's text must be at most ${xTextBudget} characters. This applies to ALL 3 X variants.`,
     post.excerpt ? `Excerpt: ${post.excerpt}` : "",
     "",
     "Full article text:",
@@ -519,9 +614,9 @@ async function generatePromoKitOnce(
     throw new ClaudeGenerationError("Claude returned invalid JSON.");
   }
 
-  if (!isValidPromoKit(parsed)) {
+  if (!isValidPromoKit(parsed, 3)) {
     throw new ClaudeGenerationError(
-      "Claude's response did not match the expected promo kit format."
+      "Claude's response did not match the expected promo kit format (3 variants per platform)."
     );
   }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 
 type AdminPost = {
@@ -8,7 +9,10 @@ type AdminPost = {
   slug: string;
   title: string;
   category: string;
+  image: string;
   published: boolean;
+  starred: boolean;
+  newsletteredAt: string | null;
   updatedAt: string;
 };
 
@@ -19,6 +23,75 @@ function formatDate(iso: string): string {
   });
 }
 
+function formatDay(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-US", { dateStyle: "medium" });
+}
+
+/* Small inline icon set (stroke style, currentColor) */
+const icons = {
+  star: (filled: boolean) => (
+    <svg
+      className="h-5 w-5"
+      viewBox="0 0 24 24"
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth={1.7}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M11.48 3.5c.16-.4.88-.4 1.04 0l2.1 5.06 5.46.44c.44.03.62.58.28.86l-4.16 3.56 1.27 5.33c.1.43-.36.77-.74.54L12 16.44l-4.68 2.85c-.38.23-.85-.11-.74-.54l1.27-5.33-4.16-3.56c-.34-.29-.16-.83.28-.86l5.46-.44 2.05-5.06Z"
+      />
+    </svg>
+  ),
+  pencil: (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="m16.86 4.49 1.65-1.65a1.88 1.88 0 1 1 2.65 2.65L7.5 19.14l-4.5 1.36 1.36-4.5L16.86 4.49Zm0 0 2.65 2.65"
+      />
+    </svg>
+  ),
+  megaphone: (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M10.34 15.84a24 24 0 0 1-5.1-.4A2.25 2.25 0 0 1 3.5 13.2v-2.4a2.25 2.25 0 0 1 1.74-2.24 24 24 0 0 1 15.1-4.2c.34.02.66.2.85.5.55.87.86 3.6.86 7.14s-.31 6.27-.86 7.14a1.1 1.1 0 0 1-.85.5 24 24 0 0 1-5.55-.7m-4.45-2.1 1.02 4.6a1.13 1.13 0 0 1-2.2.48l-1.28-5.48m2.46.4c-.83-.06-1.65-.2-2.46-.4"
+      />
+    </svg>
+  ),
+  eye: (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M2.04 12.32a1.01 1.01 0 0 1 0-.64C3.42 7.51 7.36 4.5 12 4.5s8.57 3 9.96 7.18c.07.21.07.43 0 .64C20.58 16.49 16.64 19.5 12 19.5s-8.57-3-9.96-7.18Z"
+      />
+      <circle cx="12" cy="12" r="3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
+  trash: (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="m14.74 9-.35 9m-4.78 0L9.26 9m9.97-3.21c.34.05.68.11 1.02.17m-1.02-.17-1.06 13.83A2.25 2.25 0 0 1 15.92 21.7H8.08a2.25 2.25 0 0 1-2.25-2.08L4.77 5.79m14.46 0a48 48 0 0 0-3.48-.4m-12 .57c.34-.06.68-.12 1.02-.17m0 0a48 48 0 0 1 3.48-.4m7.5 0v-.92c0-1.18-.91-2.16-2.09-2.2a52 52 0 0 0-3.32 0c-1.18.04-2.09 1.02-2.09 2.2v.92m7.5 0a49 49 0 0 0-7.5 0"
+      />
+    </svg>
+  ),
+  paperPlane: (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M6 12 3.27 3.13c6.55 1.9 12.7 4.9 18.23 8.87a48.6 48.6 0 0 1-18.23 8.87L6 12Zm0 0h7.5"
+      />
+    </svg>
+  ),
+};
+
 export default function BlogManager({
   initialPosts,
 }: {
@@ -26,16 +99,19 @@ export default function BlogManager({
 }) {
   const [posts, setPosts] = useState(initialPosts);
   const [busyId, setBusyId] = useState<number | null>(null);
+  const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
 
-  async function togglePublished(post: AdminPost) {
+  const starredCount = posts.filter((p) => p.starred).length;
+
+  async function patchPost(post: AdminPost, patch: Partial<AdminPost>) {
     setBusyId(post.id);
     setError("");
     try {
       const res = await fetch(`/api/admin/blog/${post.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ published: !post.published }),
+        body: JSON.stringify(patch),
       });
       const data = await res.json();
       if (!res.ok || !data.ok) {
@@ -45,7 +121,7 @@ export default function BlogManager({
       setPosts((prev) =>
         prev.map((p) =>
           p.id === post.id
-            ? { ...p, published: !post.published, updatedAt: data.post.updatedAt }
+            ? { ...p, ...patch, updatedAt: data.post.updatedAt }
             : p
         )
       );
@@ -56,12 +132,40 @@ export default function BlogManager({
     }
   }
 
-  async function deletePost(post: AdminPost) {
+  async function markNewsletterSent() {
     if (
       !window.confirm(
-        `Delete "${post.title}"? This cannot be undone.`
+        `Mark the ${starredCount} starred article${starredCount === 1 ? "" : "s"} as featured in the newsletter? They'll be unstarred.`
       )
     ) {
+      return;
+    }
+    setSending(true);
+    setError("");
+    try {
+      const res = await fetch("/api/admin/blog/newsletter-sent", {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        setError(data.error || "Could not update the starred articles.");
+        return;
+      }
+      const now = new Date().toISOString();
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.starred ? { ...p, starred: false, newsletteredAt: now } : p
+        )
+      );
+    } catch {
+      setError("Could not reach the server. Please try again.");
+    } finally {
+      setSending(false);
+    }
+  }
+
+  async function deletePost(post: AdminPost) {
+    if (!window.confirm(`Delete "${post.title}"? This cannot be undone.`)) {
       return;
     }
     setBusyId(post.id);
@@ -83,6 +187,9 @@ export default function BlogManager({
     }
   }
 
+  const iconBtn =
+    "flex h-9 w-9 items-center justify-center rounded-lg transition-colors disabled:opacity-50";
+
   return (
     <div className="mt-8">
       {error && (
@@ -91,6 +198,26 @@ export default function BlogManager({
         </p>
       )}
 
+      {/* Newsletter queue bar */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white px-5 py-4 shadow-sm">
+        <p className="flex items-center gap-2 text-sm font-light text-gray">
+          <span className="text-amber-500">{icons.star(starredCount > 0)}</span>
+          {starredCount === 0
+            ? "Star articles to queue them for the next newsletter."
+            : `${starredCount} article${starredCount === 1 ? "" : "s"} starred for the next newsletter.`}
+        </p>
+        {starredCount > 0 && (
+          <button
+            onClick={markNewsletterSent}
+            disabled={sending}
+            className="flex items-center gap-2 rounded-lg bg-sage px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-olive-dark disabled:opacity-60"
+          >
+            {icons.paperPlane}
+            {sending ? "Updating…" : "Newsletter sent — mark as used"}
+          </button>
+        )}
+      </div>
+
       {posts.length === 0 ? (
         <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
           <p className="text-sm font-light text-gray">
@@ -98,75 +225,121 @@ export default function BlogManager({
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {posts.map((post) => (
-            <div
-              key={post.id}
-              className="rounded-2xl bg-white p-6 shadow-sm"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <h2 className="text-lg font-medium text-dark">
+            <div key={post.id} className="rounded-2xl bg-white p-4 shadow-sm">
+              <div className="flex items-start gap-4">
+                {/* Thumbnail */}
+                <div className="relative h-16 w-20 flex-none overflow-hidden rounded-lg bg-light-2">
+                  <Image
+                    src={post.image}
+                    alt=""
+                    fill
+                    sizes="80px"
+                    className="object-cover"
+                  />
+                </div>
+
+                {/* Title + meta */}
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="truncate text-sm font-medium text-dark">
                       {post.title}
                     </h2>
                     {!post.published && (
-                      <span className="rounded-full bg-gray/10 px-3 py-0.5 text-xs text-gray">
+                      <span className="rounded-full bg-gray/10 px-2 py-0.5 text-[11px] text-gray">
                         Draft
                       </span>
                     )}
+                    {post.newsletteredAt && (
+                      <span
+                        className="rounded-full bg-sage/15 px-2 py-0.5 text-[11px] text-olive"
+                        title={`Featured in the newsletter on ${formatDay(post.newsletteredAt)}`}
+                      >
+                        In newsletter {formatDay(post.newsletteredAt)}
+                      </span>
+                    )}
                   </div>
-                  <p className="mt-1 text-sm font-light text-gray">
-                    <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs text-primary">
+                  <p className="mt-1 flex flex-wrap items-center gap-2 text-xs font-light text-gray">
+                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] text-primary">
                       {post.category}
                     </span>
-                    <span className="ml-3">
-                      Updated {formatDate(post.updatedAt)}
-                    </span>
+                    <span>Updated {formatDate(post.updatedAt)}</span>
+                    <label className="flex cursor-pointer items-center gap-1.5">
+                      <input
+                        type="checkbox"
+                        checked={post.published}
+                        disabled={busyId === post.id}
+                        onChange={() =>
+                          patchPost(post, { published: !post.published })
+                        }
+                        className="h-4 w-4 accent-olive"
+                      />
+                      Published
+                    </label>
                   </p>
                 </div>
 
-                <label className="flex cursor-pointer items-center gap-2 text-sm font-light text-gray">
-                  <input
-                    type="checkbox"
-                    checked={post.published}
+                {/* Star + action icons */}
+                <div className="flex flex-none items-center gap-1">
+                  <button
+                    onClick={() => patchPost(post, { starred: !post.starred })}
                     disabled={busyId === post.id}
-                    onChange={() => togglePublished(post)}
-                    className="h-5 w-5 accent-olive"
-                  />
-                  Published
-                </label>
-              </div>
-
-              <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                <Link
-                  href={`/admin/blog/edit/${post.id}`}
-                  className="rounded-lg bg-olive px-5 py-2.5 text-center text-sm font-medium text-white transition-colors hover:bg-olive-dark"
-                >
-                  Edit
-                </Link>
-                <Link
-                  href={`/admin/blog/promo/${post.id}`}
-                  className="rounded-lg bg-sage px-5 py-2.5 text-center text-sm font-medium text-white transition-colors hover:bg-olive-dark"
-                >
-                  Promo
-                </Link>
-                {post.published && (
-                  <Link
-                    href={`/blog/${post.slug}`}
-                    target="_blank"
-                    className="rounded-lg bg-light-2 px-5 py-2.5 text-center text-sm font-medium text-dark transition-colors hover:bg-primary/10"
+                    aria-label={
+                      post.starred
+                        ? "Remove from next newsletter"
+                        : "Star for next newsletter"
+                    }
+                    title={
+                      post.starred
+                        ? "Queued for next newsletter — click to unstar"
+                        : "Star for next newsletter"
+                    }
+                    className={`${iconBtn} ${
+                      post.starred
+                        ? "text-amber-500 hover:bg-amber-50"
+                        : "text-gray-light hover:bg-light hover:text-amber-500"
+                    }`}
                   >
-                    View
+                    {icons.star(post.starred)}
+                  </button>
+                  <Link
+                    href={`/admin/blog/edit/${post.id}`}
+                    aria-label="Edit article"
+                    title="Edit"
+                    className={`${iconBtn} text-olive hover:bg-olive/10`}
+                  >
+                    {icons.pencil}
                   </Link>
-                )}
-                <button
-                  onClick={() => deletePost(post)}
-                  disabled={busyId === post.id}
-                  className="rounded-lg bg-white px-5 py-2.5 text-sm font-medium text-primary ring-1 ring-primary/30 transition-colors hover:bg-primary/10 disabled:opacity-60"
-                >
-                  Delete
-                </button>
+                  <Link
+                    href={`/admin/blog/promo/${post.id}`}
+                    aria-label="Promo kit"
+                    title="Promo kit"
+                    className={`${iconBtn} text-sage hover:bg-sage/10`}
+                  >
+                    {icons.megaphone}
+                  </Link>
+                  {post.published && (
+                    <Link
+                      href={`/blog/${post.slug}`}
+                      target="_blank"
+                      aria-label="View on site"
+                      title="View on site"
+                      className={`${iconBtn} text-gray hover:bg-light`}
+                    >
+                      {icons.eye}
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => deletePost(post)}
+                    disabled={busyId === post.id}
+                    aria-label="Delete article"
+                    title="Delete"
+                    className={`${iconBtn} text-primary hover:bg-primary/10`}
+                  >
+                    {icons.trash}
+                  </button>
+                </div>
               </div>
             </div>
           ))}

@@ -17,6 +17,8 @@ model BlogPost {
   image     String
   body      String // JSON array of {type: 'h2'|'p'|'ul', ...} blocks
   published Boolean  @default(true)
+  starred   Boolean  @default(false) // queued for the next newsletter
+  newsletteredAt DateTime? // set when a newsletter featuring this post went out
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

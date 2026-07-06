@@ -41,6 +41,7 @@ export async function PUT(request: Request, { params }: Params) {
     excerpt?: string;
     image?: string;
     published?: boolean;
+    starred?: boolean;
     body?: string;
   } = {};
 
@@ -77,6 +78,7 @@ export async function PUT(request: Request, { params }: Params) {
   if (data.excerpt !== undefined) update.excerpt = String(data.excerpt).trim();
   if (data.image !== undefined) update.image = String(data.image).trim();
   if (data.published !== undefined) update.published = Boolean(data.published);
+  if (data.starred !== undefined) update.starred = Boolean(data.starred);
   if (data.body !== undefined) {
     const body = validateBody(data.body);
     if (!body) {

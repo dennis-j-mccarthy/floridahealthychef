@@ -22,7 +22,10 @@ export default async function BlogAdminPage() {
       slug: true,
       title: true,
       category: true,
+      image: true,
       published: true,
+      starred: true,
+      newsletteredAt: true,
       updatedAt: true,
     },
   });
@@ -43,7 +46,7 @@ export default async function BlogAdminPage() {
               href="/admin/blog/generate"
               className="rounded-lg bg-primary px-5 py-3 text-center text-sm font-medium text-white transition-colors hover:bg-primary-dark"
             >
-              ✨ Generate with Claude
+              Generate with Claude
             </Link>
             <Link
               href="/admin/blog/edit/new"
@@ -58,6 +61,7 @@ export default async function BlogAdminPage() {
           initialPosts={posts.map((p) => ({
             ...p,
             updatedAt: p.updatedAt.toISOString(),
+            newsletteredAt: p.newsletteredAt?.toISOString() ?? null,
           }))}
         />
       </div>
