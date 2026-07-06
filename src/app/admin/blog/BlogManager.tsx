@@ -145,6 +145,12 @@ export default function BlogManager({
                 >
                   Edit
                 </Link>
+                <Link
+                  href={`/admin/blog/promo/${post.id}`}
+                  className="rounded-lg bg-sage px-5 py-2.5 text-center text-sm font-medium text-white transition-colors hover:bg-olive-dark"
+                >
+                  Promo
+                </Link>
                 {post.published && (
                   <Link
                     href={`/blog/${post.slug}`}

@@ -21,6 +21,14 @@ model BlogPost {
   updatedAt DateTime @updatedAt
 }
 
+model PromoKit {
+  id        Int      @id @default(autoincrement())
+  postId    Int      @unique
+  content   String // JSON of generated promo content (instagram/facebook/x/email)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model GalleryItem {
   id        Int      @id @default(autoincrement())
   src       String

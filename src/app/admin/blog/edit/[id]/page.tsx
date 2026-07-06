@@ -14,12 +14,16 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-type Props = { params: Promise<{ id: string }> };
+type Props = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ created?: string }>;
+};
 
-export default async function EditArticlePage({ params }: Props) {
+export default async function EditArticlePage({ params, searchParams }: Props) {
   if (!(await isAdminRequest())) redirect("/admin/login");
 
   const { id } = await params;
+  const { created } = await searchParams;
 
   let initial: EditablePost | null = null;
   if (id !== "new") {
@@ -72,6 +76,7 @@ export default async function EditArticlePage({ params }: Props) {
         <EditForm
           initial={initial}
           categories={categories.map((c) => c.category)}
+          showPromoPrompt={created === "1"}
         />
       </div>
     </section>

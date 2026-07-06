@@ -57,7 +57,7 @@ export default function GenerateForm() {
         return;
       }
       // Draft saved — send the admin to the editor to review and publish.
-      router.push(`/admin/blog/edit/${data.id}`);
+      router.push(`/admin/blog/edit/${data.id}?created=1`);
     } catch {
       setError("Could not reach the server. Please try again.");
     } finally {

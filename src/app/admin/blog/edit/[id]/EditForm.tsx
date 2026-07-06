@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { blogCategories } from "@/data/blog";
 import { slugify, textToBlocks } from "../../blocks";
@@ -26,11 +27,16 @@ const labelClass = "block text-sm font-medium text-dark";
 export default function EditForm({
   initial,
   categories,
+  showPromoPrompt = false,
 }: {
   initial: EditablePost | null;
   categories: string[];
+  showPromoPrompt?: boolean;
 }) {
   const router = useRouter();
+  const [promoPromptVisible, setPromoPromptVisible] = useState(
+    showPromoPrompt && Boolean(initial)
+  );
   const allCategories = Array.from(
     new Set([...blogCategories, ...categories])
   );
@@ -126,7 +132,12 @@ export default function EditForm({
         setError(data.error || "Could not save the article.");
         return;
       }
-      router.push("/admin/blog");
+      if (initial) {
+        router.push("/admin/blog");
+      } else {
+        // New article saved — return to the editor and offer the promo kit.
+        router.push(`/admin/blog/edit/${data.post.id}?created=1`);
+      }
       router.refresh();
     } catch {
       setError("Could not reach the server. Please try again.");
@@ -136,6 +147,38 @@ export default function EditForm({
   }
 
   return (
+    <>
+      {promoPromptVisible && initial && (
+        <div className="mt-8 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-sage/40 sm:p-8">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-base font-medium text-dark">
+                Article saved — want social posts and an email to promote it?
+              </p>
+              <p className="mt-1 text-sm font-light text-gray">
+                Claude will draft Instagram, Facebook, and X posts plus a
+                newsletter email from this article.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <Link
+                href={`/admin/blog/promo/${initial.id}`}
+                className="rounded-lg bg-sage px-5 py-3 text-sm font-medium text-white transition-colors hover:bg-olive-dark"
+              >
+                ✨ Create promo kit
+              </Link>
+              <button
+                onClick={() => setPromoPromptVisible(false)}
+                aria-label="Dismiss"
+                className="rounded-lg px-3 py-2 text-sm font-light text-gray transition-colors hover:text-dark"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     <div className="mt-8 rounded-2xl bg-white p-6 shadow-sm sm:p-8">
       <div className="space-y-6">
         {/* Title */}
@@ -303,5 +346,6 @@ export default function EditForm({
         </div>
       </div>
     </div>
+    </>
   );
 }
