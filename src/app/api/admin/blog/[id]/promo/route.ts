@@ -42,8 +42,9 @@ export async function GET(_request: Request, { params }: Params) {
 
   let content: PromoKitContent | null;
   try {
-    // Normalize old single-variant kits to the current arrays-of-variants shape.
-    content = normalizePromoKit(JSON.parse(kit.content));
+    // Normalize old single-variant kits to the current arrays-of-variants
+    // shape (variants without an image fall back to the post's hero image).
+    content = normalizePromoKit(JSON.parse(kit.content), post.image);
   } catch {
     content = null;
   }
@@ -84,14 +85,28 @@ export async function POST(_request: Request, { params }: Params) {
 
   const articleUrl = `${SITE_URL}/blog/${post.slug}`;
 
-  let content: PromoKitContent;
+  // Captioned photo pool Claude picks from: index 0 is the article's hero
+  // image, then the gallery photos in position order.
+  const gallery = await prisma.galleryItem.findMany({
+    orderBy: { position: "asc" },
+  });
+  const captionedGallery = gallery.filter((g) => g.caption.trim() !== "");
+  const heroSrc = post.image;
+  const imageSrcs = [heroSrc, ...captionedGallery.map((g) => g.src)];
+  const images = [
+    { index: 0, caption: `Article hero image — ${post.title}` },
+    ...captionedGallery.map((g, i) => ({ index: i + 1, caption: g.caption })),
+  ];
+
+  let raw: Awaited<ReturnType<typeof generatePromoKit>>;
   try {
-    content = await generatePromoKit({
+    raw = await generatePromoKit({
       title: post.title,
       excerpt: post.excerpt,
       category: post.category,
       bodyText,
       articleUrl,
+      images,
     });
   } catch (error) {
     if (error instanceof ClaudeGenerationError) {
@@ -102,6 +117,38 @@ export async function POST(_request: Request, { params }: Params) {
     }
     throw error;
   }
+
+  // Map each variant's imageIndex to its actual src; anything out of range
+  // or invalid clamps to the hero image.
+  const resolveImage = (imageIndex: number): string =>
+    Number.isInteger(imageIndex) &&
+    imageIndex >= 0 &&
+    imageIndex < imageSrcs.length
+      ? imageSrcs[imageIndex]
+      : heroSrc;
+
+  const content: PromoKitContent = {
+    instagram: raw.instagram.map(({ caption, hashtags, imageIndex }) => ({
+      caption,
+      hashtags,
+      image: resolveImage(imageIndex),
+    })),
+    facebook: raw.facebook.map(({ post: fbPost, imageIndex }) => ({
+      post: fbPost,
+      image: resolveImage(imageIndex),
+    })),
+    x: raw.x.map(({ post: xPost, imageIndex }) => ({
+      post: xPost,
+      image: resolveImage(imageIndex),
+    })),
+    tiktok: raw.tiktok.map(({ caption, hashtags, videoIdea, imageIndex }) => ({
+      caption,
+      hashtags,
+      videoIdea,
+      image: resolveImage(imageIndex),
+    })),
+    email: raw.email,
+  };
 
   const saved = await prisma.promoKit.upsert({
     where: { postId: post.id },

@@ -3,7 +3,11 @@
    social-post mockups so they render pixel-exact without next/image wrappers */
 
 import { useEffect, useRef, useState } from "react";
-import type { InstagramVariant, PromoKitContent } from "@/lib/claude";
+import type {
+  InstagramVariant,
+  PromoKitContent,
+  TikTokVariant,
+} from "@/lib/claude";
 import type { BlogBlock } from "@/data/blog";
 
 const SAGE = "#939d3c";
@@ -230,6 +234,14 @@ function GlobeIcon({ className }: IconProps) {
   );
 }
 
+function MusicNoteIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
+      <path d="M9 18.5a3.25 3.25 0 1 1-2-3V4.6a1 1 0 0 1 .8-.98l10-2A1 1 0 0 1 19 2.6v13.4a3.25 3.25 0 1 1-2-3V7.32L9 8.92z" />
+    </svg>
+  );
+}
+
 function VerifiedIcon({ className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="#1d9bf0" className={className} aria-hidden="true">
@@ -257,10 +269,10 @@ function Avatar({ size }: { size: number }) {
 
 function InstagramPreview({
   variant,
-  heroImageUrl,
+  imageUrl,
 }: {
   variant: InstagramVariant;
-  heroImageUrl: string;
+  imageUrl: string;
 }) {
   return (
     <div className="w-full max-w-[380px] overflow-hidden rounded-lg border border-gray-200 bg-white font-sans text-[#262626] shadow-sm">
@@ -270,10 +282,10 @@ function InstagramPreview({
         <span className="text-sm font-semibold lowercase">{IG_HANDLE}</span>
         <EllipsisIcon className="ml-auto h-5 w-5 text-[#262626]" />
       </div>
-      {/* Hero image, square */}
-      {heroImageUrl && (
+      {/* Variant image, square */}
+      {imageUrl && (
         <img
-          src={heroImageUrl}
+          src={imageUrl}
           alt=""
           className="aspect-square w-full object-cover"
         />
@@ -307,10 +319,10 @@ function InstagramPreview({
 
 function FacebookPreview({
   post,
-  heroImageUrl,
+  imageUrl,
 }: {
   post: string;
-  heroImageUrl: string;
+  imageUrl: string;
 }) {
   return (
     <div className="w-full max-w-[500px] overflow-hidden rounded-xl border border-gray-200 bg-white font-sans text-[#050505] shadow-sm">
@@ -331,9 +343,9 @@ function FacebookPreview({
       <p className="whitespace-pre-line px-4 py-3 text-[15px] leading-normal">
         <TextWithLinks text={post} />
       </p>
-      {/* Hero image edge-to-edge */}
-      {heroImageUrl && (
-        <img src={heroImageUrl} alt="" className="w-full object-cover" />
+      {/* Variant image edge-to-edge */}
+      {imageUrl && (
+        <img src={imageUrl} alt="" className="w-full object-cover" />
       )}
       {/* Divider + actions */}
       <div className="mx-4 border-t border-gray-200" />
@@ -354,10 +366,10 @@ function FacebookPreview({
 
 function XPreview({
   post,
-  heroImageUrl,
+  imageUrl,
 }: {
   post: string;
-  heroImageUrl: string;
+  imageUrl: string;
 }) {
   return (
     <div className="w-full max-w-[500px] rounded-xl border border-gray-200 bg-white p-4 font-sans text-[#0f1419] shadow-sm">
@@ -374,10 +386,10 @@ function XPreview({
           <p className="mt-0.5 whitespace-pre-line text-[15px] leading-normal">
             <TextWithLinks text={post} />
           </p>
-          {/* Hero image */}
-          {heroImageUrl && (
+          {/* Variant image */}
+          {imageUrl && (
             <img
-              src={heroImageUrl}
+              src={imageUrl}
               alt=""
               className="mt-3 aspect-[16/9] w-full rounded-2xl border border-gray-200 object-cover"
             />
@@ -406,13 +418,72 @@ function XPreview({
   );
 }
 
+function TikTokPreview({
+  variant,
+  imageUrl,
+}: {
+  variant: TikTokVariant;
+  imageUrl: string;
+}) {
+  return (
+    <div
+      className="relative w-full max-w-[300px] overflow-hidden rounded-2xl bg-black font-sans text-white shadow-sm"
+      style={{ aspectRatio: "9 / 16" }}
+    >
+      {/* Full-bleed variant photo */}
+      {imageUrl && (
+        <img
+          src={imageUrl}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      )}
+      {/* Legibility gradient */}
+      <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+      {/* Right-side icon rail */}
+      <div className="absolute bottom-16 right-2 flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-0.5">
+          <HeartIcon className="h-7 w-7 drop-shadow" />
+          <span className="text-xs font-semibold drop-shadow">1.4K</span>
+        </div>
+        <div className="flex flex-col items-center gap-0.5">
+          <CommentIcon className="h-7 w-7 drop-shadow" />
+          <span className="text-xs font-semibold drop-shadow">86</span>
+        </div>
+        <div className="flex flex-col items-center gap-0.5">
+          <BookmarkIcon className="h-7 w-7 drop-shadow" />
+          <span className="text-xs font-semibold drop-shadow">212</span>
+        </div>
+        <div className="flex flex-col items-center gap-0.5">
+          <ShareIcon className="h-7 w-7 drop-shadow" />
+          <span className="text-xs font-semibold drop-shadow">45</span>
+        </div>
+      </div>
+      {/* Bottom-left stack */}
+      <div className="absolute bottom-3 left-3 right-14">
+        <p className="text-sm font-bold drop-shadow">{`@${IG_HANDLE}`}</p>
+        <p className="mt-1 line-clamp-3 text-[13px] leading-snug drop-shadow">
+          {variant.caption}
+        </p>
+        <p className="mt-1 line-clamp-1 text-[13px] font-medium drop-shadow">
+          {variant.hashtags.join(" ")}
+        </p>
+        <p className="mt-2 flex items-center gap-1.5 text-xs drop-shadow">
+          <MusicNoteIcon className="h-3.5 w-3.5 shrink-0" />
+          <span className="truncate">original sound — {BRAND_NAME}</span>
+        </p>
+      </div>
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /* Main view                                                          */
 /* ------------------------------------------------------------------ */
 
 const cardClass = "rounded-2xl bg-white p-6 shadow-sm sm:p-8";
 
-type PlatformKey = "instagram" | "facebook" | "x" | "email";
+type PlatformKey = "instagram" | "facebook" | "x" | "tiktok" | "email";
 
 export default function PromoKitView({
   postId,
@@ -435,6 +506,7 @@ export default function PromoKitView({
     instagram: 0,
     facebook: 0,
     x: 0,
+    tiktok: 0,
     email: 0,
   });
   const copyTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -478,7 +550,7 @@ export default function PromoKitView({
         return;
       }
       setKit(data.kit.content);
-      setSelected({ instagram: 0, facebook: 0, x: 0, email: 0 });
+      setSelected({ instagram: 0, facebook: 0, x: 0, tiktok: 0, email: 0 });
     } catch {
       setError("Could not reach the server. Please try again.");
     } finally {
@@ -528,11 +600,16 @@ export default function PromoKitView({
     return Math.min(selected[platform], Math.max(count - 1, 0));
   }
 
-  function DownloadImageLink() {
-    if (!heroImageUrl) return null;
+  /** Variant image src with the article hero as fallback. */
+  function variantImage(image: string | undefined): string {
+    return image || heroImageUrl;
+  }
+
+  function DownloadImageLink({ src }: { src: string }) {
+    if (!src) return null;
     return (
       <a
-        href={heroImageUrl}
+        href={src}
         download
         className="text-sm font-medium text-olive underline transition-colors hover:text-olive-dark"
       >
@@ -546,9 +623,10 @@ export default function PromoKitView({
       <div className={`mt-8 ${cardClass}`}>
         <p className="text-base font-light text-gray">
           Turn this article into ready-to-post social content and a promo
-          email — Instagram, Facebook, X, and a newsletter, all in Beth&apos;s
-          voice, using the article&apos;s hero image. You&apos;ll get three
-          variant options per platform, each with a different angle.
+          email — Instagram, Facebook, X, TikTok, and a newsletter, all in
+          Beth&apos;s voice. You&apos;ll get three variant options per
+          platform, each with a different angle and its own matching photo
+          from your gallery.
         </p>
         {heroImageUrl && (
           <div className="relative mt-5 aspect-[16/9] w-full max-w-md overflow-hidden rounded-xl">
@@ -580,12 +658,19 @@ export default function PromoKitView({
   const igIndex = activeIndex("instagram", kit.instagram.length);
   const fbIndex = activeIndex("facebook", kit.facebook.length);
   const xIndex = activeIndex("x", kit.x.length);
+  const ttIndex = activeIndex("tiktok", kit.tiktok.length);
   const emailIndex = activeIndex("email", kit.email.subjects.length);
 
   const igVariant = kit.instagram[igIndex];
   const fbVariant = kit.facebook[fbIndex];
   const xVariant = kit.x[xIndex];
+  const ttVariant = kit.tiktok[ttIndex] as TikTokVariant | undefined;
   const emailSubject = kit.email.subjects[emailIndex];
+
+  const igImage = variantImage(igVariant.image);
+  const fbImage = variantImage(fbVariant.image);
+  const xImage = variantImage(xVariant.image);
+  const ttImage = variantImage(ttVariant?.image);
 
   const emailHtml = buildEmailHtml(kit, emailSubject, heroImageUrl, articleTitle);
   const emailPlainText = buildEmailPlainText(kit, emailSubject);
@@ -603,14 +688,14 @@ export default function PromoKitView({
         <h2 className="text-xl font-medium text-dark">Instagram</h2>
         <OptionTabs platform="instagram" count={kit.instagram.length} />
         <div className="mt-5">
-          <InstagramPreview variant={igVariant} heroImageUrl={heroImageUrl} />
+          <InstagramPreview variant={igVariant} imageUrl={igImage} />
         </div>
         <div className="mt-5 flex flex-wrap items-center gap-4">
           <CopyButton
             id={`instagram-${igIndex}`}
             text={instagramCopyText(igVariant)}
           />
-          <DownloadImageLink />
+          <DownloadImageLink src={igImage} />
         </div>
       </div>
 
@@ -619,11 +704,11 @@ export default function PromoKitView({
         <h2 className="text-xl font-medium text-dark">Facebook</h2>
         <OptionTabs platform="facebook" count={kit.facebook.length} />
         <div className="mt-5">
-          <FacebookPreview post={fbVariant.post} heroImageUrl={heroImageUrl} />
+          <FacebookPreview post={fbVariant.post} imageUrl={fbImage} />
         </div>
         <div className="mt-5 flex flex-wrap items-center gap-4">
           <CopyButton id={`facebook-${fbIndex}`} text={fbVariant.post} />
-          <DownloadImageLink />
+          <DownloadImageLink src={fbImage} />
         </div>
       </div>
 
@@ -632,15 +717,56 @@ export default function PromoKitView({
         <h2 className="text-xl font-medium text-dark">X</h2>
         <OptionTabs platform="x" count={kit.x.length} />
         <div className="mt-5">
-          <XPreview post={xVariant.post} heroImageUrl={heroImageUrl} />
+          <XPreview post={xVariant.post} imageUrl={xImage} />
         </div>
         <p className="mt-2 text-xs font-light text-gray">
           {xVariant.post.length} / 280 characters
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-4">
           <CopyButton id={`x-${xIndex}`} text={xVariant.post} />
-          <DownloadImageLink />
+          <DownloadImageLink src={xImage} />
         </div>
+      </div>
+
+      {/* TikTok */}
+      <div className={cardClass}>
+        <h2 className="text-xl font-medium text-dark">TikTok</h2>
+        {ttVariant ? (
+          <>
+            <OptionTabs platform="tiktok" count={kit.tiktok.length} />
+            <div className="mt-5">
+              <TikTokPreview variant={ttVariant} imageUrl={ttImage} />
+            </div>
+            <div className="mt-5 max-w-[500px] rounded-xl border border-light-2 bg-light p-4">
+              <p className="text-sm font-medium text-dark">Video idea</p>
+              <p className="mt-2 whitespace-pre-line text-sm font-light leading-relaxed text-dark">
+                {ttVariant.videoIdea}
+              </p>
+            </div>
+            <div className="mt-5 flex flex-wrap items-center gap-4">
+              <CopyButton
+                id={`tiktok-${ttIndex}`}
+                text={`${ttVariant.caption}\n\n${ttVariant.hashtags.join(" ")}`}
+              />
+              <button
+                onClick={() =>
+                  copyToClipboard(`tiktok-script-${ttIndex}`, ttVariant.videoIdea)
+                }
+                className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-olive ring-1 ring-olive/40 transition-colors hover:bg-olive/10"
+              >
+                {copiedKey === `tiktok-script-${ttIndex}`
+                  ? "Copied!"
+                  : "Copy video script"}
+              </button>
+              <DownloadImageLink src={ttImage} />
+            </div>
+          </>
+        ) : (
+          <p className="mt-4 text-base font-light text-gray">
+            This kit was generated before TikTok support. Regenerate to get
+            TikTok posts.
+          </p>
+        )}
       </div>
 
       {/* Email */}

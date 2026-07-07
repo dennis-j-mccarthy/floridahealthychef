@@ -41,8 +41,9 @@ export default async function PromoKitPage({ params }: Props) {
   let initialKit: PromoKitContent | null = null;
   if (kitRow) {
     try {
-      // Normalize old single-variant kits to the current arrays-of-variants shape.
-      initialKit = normalizePromoKit(JSON.parse(kitRow.content));
+      // Normalize old single-variant kits to the current arrays-of-variants
+      // shape (variants without an image fall back to the post's hero image).
+      initialKit = normalizePromoKit(JSON.parse(kitRow.content), post.image);
     } catch {
       initialKit = null;
     }
