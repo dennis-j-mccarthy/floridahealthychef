@@ -84,6 +84,7 @@ export default function SlideshowVideoModal({
   otherImages,
   heroImageUrl,
   onClose,
+  onCreated,
 }: {
   platform: VideoPlatform;
   optionNumber: number;
@@ -96,6 +97,8 @@ export default function SlideshowVideoModal({
   /** Article hero image, used as filler to reach at least 3 slides. */
   heroImageUrl: string;
   onClose: () => void;
+  /** Called with an independent object URL so the preview card can play it. */
+  onCreated?: (video: { url: string; ext: string }) => void;
 }) {
   const [phase, setPhase] = useState<Phase>("setup");
   const [error, setError] = useState("");
@@ -266,6 +269,8 @@ export default function SlideshowVideoModal({
         resultUrlRef.current = url;
         setResult({ url, ext });
         setPhase("done");
+        // Hand the parent its own URL for the same blob (independent lifetime).
+        onCreated?.({ url: URL.createObjectURL(blob), ext });
       };
       recorder.start(250);
 

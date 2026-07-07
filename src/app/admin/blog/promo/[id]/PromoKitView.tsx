@@ -448,35 +448,50 @@ function XPreview({
 function TikTokPreview({
   variant,
   imageUrl,
+  videoUrl,
 }: {
   variant: TikTokVariant;
   imageUrl: string;
+  videoUrl?: string;
 }) {
   return (
     <div
       className="relative w-full max-w-[300px] overflow-hidden rounded-2xl bg-black font-sans text-white shadow-sm"
       style={{ aspectRatio: "9 / 16" }}
     >
-      {/* Full-bleed variant photo */}
-      {imageUrl && (
-        <img
-          src={imageUrl}
-          alt=""
+      {/* Full-bleed media: slideshow video once created, else the cover photo */}
+      {videoUrl ? (
+        <video
+          src={videoUrl}
           className="absolute inset-0 h-full w-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
         />
+      ) : (
+        imageUrl && (
+          <img
+            src={imageUrl}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )
       )}
       {/* Legibility gradient */}
       <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-      {/* Video affordance: play button + cover-frame chip */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-black/45 backdrop-blur-sm">
-          <svg viewBox="0 0 24 24" fill="white" className="ml-1 h-7 w-7" aria-hidden="true">
-            <path d="M8 5.14v13.72c0 .8.87 1.3 1.56.88l10.54-6.86a1.05 1.05 0 0 0 0-1.76L9.56 4.26A1.05 1.05 0 0 0 8 5.14Z" />
-          </svg>
-        </span>
-      </div>
+      {/* Video affordance */}
+      {!videoUrl && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-black/45 backdrop-blur-sm">
+            <svg viewBox="0 0 24 24" fill="white" className="ml-1 h-7 w-7" aria-hidden="true">
+              <path d="M8 5.14v13.72c0 .8.87 1.3 1.56.88l10.54-6.86a1.05 1.05 0 0 0 0-1.76L9.56 4.26A1.05 1.05 0 0 0 8 5.14Z" />
+            </svg>
+          </span>
+        </div>
+      )}
       <span className="absolute left-2 top-2 rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-white/90 backdrop-blur-sm">
-        Suggested cover frame
+        {videoUrl ? "Slideshow preview" : "Suggested cover frame"}
       </span>
       {/* Right-side icon rail */}
       <div className="absolute bottom-16 right-2 flex flex-col items-center gap-4">
@@ -518,35 +533,50 @@ function TikTokPreview({
 function ReelsPreview({
   variant,
   imageUrl,
+  videoUrl,
 }: {
   variant: ReelsVariant;
   imageUrl: string;
+  videoUrl?: string;
 }) {
   return (
     <div
       className="relative w-full max-w-[300px] overflow-hidden rounded-2xl bg-black font-sans text-white shadow-sm"
       style={{ aspectRatio: "9 / 16" }}
     >
-      {/* Full-bleed variant photo */}
-      {imageUrl && (
-        <img
-          src={imageUrl}
-          alt=""
+      {/* Full-bleed media: slideshow video once created, else the cover photo */}
+      {videoUrl ? (
+        <video
+          src={videoUrl}
           className="absolute inset-0 h-full w-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
         />
+      ) : (
+        imageUrl && (
+          <img
+            src={imageUrl}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        )
       )}
       {/* Legibility gradient */}
       <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-      {/* Video affordance: play button + cover-frame chip */}
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-black/45 backdrop-blur-sm">
-          <svg viewBox="0 0 24 24" fill="white" className="ml-1 h-7 w-7" aria-hidden="true">
-            <path d="M8 5.14v13.72c0 .8.87 1.3 1.56.88l10.54-6.86a1.05 1.05 0 0 0 0-1.76L9.56 4.26A1.05 1.05 0 0 0 8 5.14Z" />
-          </svg>
-        </span>
-      </div>
+      {/* Video affordance */}
+      {!videoUrl && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-black/45 backdrop-blur-sm">
+            <svg viewBox="0 0 24 24" fill="white" className="ml-1 h-7 w-7" aria-hidden="true">
+              <path d="M8 5.14v13.72c0 .8.87 1.3 1.56.88l10.54-6.86a1.05 1.05 0 0 0 0-1.76L9.56 4.26A1.05 1.05 0 0 0 8 5.14Z" />
+            </svg>
+          </span>
+        </div>
+      )}
       <span className="absolute left-2 top-2 rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-white/90 backdrop-blur-sm">
-        Suggested cover frame
+        {videoUrl ? "Slideshow preview" : "Suggested cover frame"}
       </span>
       {/* Right-side icon rail (Instagram Reels chrome) */}
       <div className="absolute bottom-16 right-2 flex flex-col items-center gap-4">
@@ -635,6 +665,9 @@ export default function PromoKitView({
     tiktok: 0,
     email: 0,
   });
+  const [slideshowVideos, setSlideshowVideos] = useState<
+    Record<string, { url: string; ext: string }>
+  >({});
   const [videoTool, setVideoTool] = useState<{
     tool: "slideshow" | "record";
     platform: "reels" | "tiktok";
@@ -937,7 +970,11 @@ export default function PromoKitView({
           <>
             <OptionTabs platform="reels" count={kit.reels.length} />
             <div className="mt-5">
-              <ReelsPreview variant={rlVariant} imageUrl={rlImage} />
+              <ReelsPreview
+                variant={rlVariant}
+                imageUrl={rlImage}
+                videoUrl={slideshowVideos[`reels-${rlIndex}`]?.url}
+              />
             </div>
             <div className="mt-5 max-w-[500px] rounded-xl border border-light-2 bg-light p-4">
               <p className="text-sm font-medium text-dark">Video idea</p>
@@ -1008,7 +1045,11 @@ export default function PromoKitView({
           <>
             <OptionTabs platform="tiktok" count={kit.tiktok.length} />
             <div className="mt-5">
-              <TikTokPreview variant={ttVariant} imageUrl={ttImage} />
+              <TikTokPreview
+                variant={ttVariant}
+                imageUrl={ttImage}
+                videoUrl={slideshowVideos[`tiktok-${ttIndex}`]?.url}
+              />
             </div>
             <div className="mt-5 max-w-[500px] rounded-xl border border-light-2 bg-light p-4">
               <p className="text-sm font-medium text-dark">Video idea</p>
@@ -1187,6 +1228,13 @@ export default function PromoKitView({
                 .map((v) => variantImage(v.image))}
               heroImageUrl={heroImageUrl}
               onClose={() => setVideoTool(null)}
+              onCreated={(video) => {
+                const key = `${videoTool.platform}-${activeIdx}`;
+                setSlideshowVideos((prev) => {
+                  if (prev[key]) URL.revokeObjectURL(prev[key].url);
+                  return { ...prev, [key]: video };
+                });
+              }}
             />
           );
         })()}
