@@ -725,7 +725,7 @@ export default function PromoKitView({
         >
           {generating
             ? "Generating… this can take 1-2 minutes"
-            : "✨ Generate social posts + email"}
+            : "Generate social posts + email"}
         </button>
       </div>
     );
@@ -754,12 +754,37 @@ export default function PromoKitView({
   const emailHtml = buildEmailHtml(kit, emailSubject, heroImageUrl, articleTitle);
   const emailPlainText = buildEmailPlainText(kit, emailSubject);
 
+  const isOutdated =
+    kit.instagram.length < 3 ||
+    kit.reels.length === 0 ||
+    kit.tiktok.length === 0;
+
   return (
     <div className="mt-8 space-y-6">
       {error && (
         <p className="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">
           {error}
         </p>
+      )}
+
+      {isOutdated && (
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4">
+          <p className="text-sm font-light text-dark">
+            This kit was made with an older version — regenerate to get{" "}
+            <span className="font-medium">
+              3 options per platform, Reels &amp; TikTok, and a different photo
+              for each option
+            </span>
+            .
+          </p>
+          <button
+            onClick={() => generate(true)}
+            disabled={generating}
+            className="rounded-lg bg-sage px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-olive-dark disabled:opacity-60"
+          >
+            {generating ? "Regenerating… 1-2 min" : "Regenerate now"}
+          </button>
+        </div>
       )}
 
       {/* Instagram */}
@@ -1000,7 +1025,7 @@ export default function PromoKitView({
         >
           {generating
             ? "Regenerating… this can take 1-2 minutes"
-            : "↻ Regenerate"}
+            : "Regenerate"}
         </button>
       </div>
     </div>
