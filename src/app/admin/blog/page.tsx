@@ -27,6 +27,7 @@ export default async function BlogAdminPage() {
       starred: true,
       newsletteredAt: true,
       updatedAt: true,
+      body: true,
     },
   });
 

@@ -233,10 +233,19 @@ export type TikTokVariant = {
   videoIdea: string;
   image: string;
 };
+export type ReelsVariant = {
+  caption: string;
+  hashtags: string[];
+  /** A 3-5 beat vertical-video shot list, scroll-stopping hook first. */
+  videoIdea: string;
+  image: string;
+};
 
 export type PromoKitContent = {
   /** Exactly 3 variants when freshly generated; ≥1 after normalizing old kits. */
   instagram: InstagramVariant[];
+  /** Empty array for kits generated before Reels support — regenerate to fill. */
+  reels: ReelsVariant[];
   facebook: FacebookVariant[];
   x: XVariant[];
   /** Empty array for kits generated before TikTok support — regenerate to fill. */
@@ -258,6 +267,12 @@ export type PromoKitContent = {
  */
 export type GeneratedPromoKit = {
   instagram: Array<{ caption: string; hashtags: string[]; imageIndex: number }>;
+  reels: Array<{
+    caption: string;
+    hashtags: string[];
+    videoIdea: string;
+    imageIndex: number;
+  }>;
   facebook: Array<{ post: string; imageIndex: number }>;
   x: Array<{ post: string; imageIndex: number }>;
   tiktok: Array<{
@@ -295,7 +310,7 @@ Content rules:
 - Include the article's URL where it reads naturally (Facebook and X posts, email CTA). Instagram captions should not include raw URLs — say "link in bio" style phrasing instead if a pointer is needed.
 
 Variant rules:
-- For Instagram, Facebook, X, and TikTok, write EXACTLY 3 variant posts each, and for the email write EXACTLY 3 subject line options.
+- For Instagram, Instagram Reels, Facebook, X, and TikTok, write EXACTLY 3 variant posts each, and for the email write EXACTLY 3 subject line options.
 - The 3 variants for each platform must be genuinely different ANGLES on the article — not rewordings of the same post. For example: one sensory/appetite-led (the taste, the plate, the craving), one health-benefit-led (what it does for the body, food as medicine), and one local-community-led (Southwest Florida, seasonality, the communities you serve). Choose the 3 angles that best fit the article; each variant should feel like a distinct reason to click.
 - Every variant must still stand fully on its own and follow the channel guidelines below.
 
@@ -307,7 +322,8 @@ Photo selection rules:
 
 Channel guidelines:
 - Instagram: an engaging caption with tasteful, sparing emoji and short scannable lines, plus 8-12 hashtags mixing brand/wellness tags (like #foodasmedicine, #healthyeating, #personalchef) with local Southwest Florida tags (like #naplesflorida, #bonitasprings, #swfl). Each of the 3 variants needs its own caption and its own hashtag set (they may overlap where natural).
-- Facebook: a friendly, slightly longer post of 2-3 short paragraphs that ends with a clear call to action to read the article, including the article link. Each of the 3 variants includes the link.
+- Instagram Reels: a caption of AT MOST 125 characters before the hashtags (that's all that shows before "…more"), with 1-2 tasteful emoji and no raw URLs, plus 3-5 hashtags mixing brand/wellness tags with local Southwest Florida tags. Each variant also needs a videoIdea: a vertical-video shot list of 3-5 beats, one beat per line, opening with a SCROLL-STOPPING first-second hook and calling out what any on-screen text overlays say (e.g. "Hook (first second): sizzling pan close-up, text overlay: 'Dinner in Naples just got healthier'"). Keep every beat filmable in a home kitchen, in Beth's warm voice. The 3 variants follow the same distinct-angles rule.
+- Facebook: ONE short, conversational paragraph of just 2-3 sentences (roughly 40-80 words total) — short Facebook posts get dramatically more engagement, so NO multi-paragraph essays. End with a clear one-line call to action to read the article, then the article link on its own line. Each of the 3 variants includes the link.
 - X: a single punchy post that MUST be under 280 characters total, including the article URL. The URL is long, so keep your own words very short — one or two brief sentences. Count carefully; the character budget for your text will be given with the article. ALL 3 variants must each be under the limit.
 - TikTok: a short, punchy caption of AT MOST 150 characters (1-2 tasteful emoji are fine, no raw URLs), plus 4-6 hashtags mixing food-community tags (like #foodtok, #healthytok, #foodasmedicine) with local Southwest Florida tags (like #swfl, #naplesflorida, #bonitasprings). Each variant also needs a videoIdea: a mini shot-list/script of 3-5 beats, one beat per line, with the HOOK first — describing what Beth films and what any on-screen text overlays say (e.g. "Hook: close-up ladle of golden broth, text overlay: 'The 3-ingredient secret my clients swear by'"). Keep every beat filmable in a home kitchen, in Beth's warm voice. The 3 variants follow the same distinct-angles rule.
 - Email: a short newsletter promoting the article — 3 compelling subject line options (each a different angle, matching the variant rules), a single preheader (the preview text after the subject), a warm greeting, 2-4 short body blocks (paragraphs, optional h2 heading or bulleted list) teasing the article's value without repeating it wholesale, a warm signoff (e.g. "With love from my kitchen, Beth"), and a call-to-action button labeled invitingly that links to the article URL. Only the subject line has variants — the body is shared.`;
@@ -362,7 +378,7 @@ const IMAGE_INDEX_SCHEMA = {
 const PROMO_KIT_SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["instagram", "facebook", "x", "tiktok", "email"],
+  required: ["instagram", "reels", "facebook", "x", "tiktok", "email"],
   properties: {
     instagram: {
       type: "array",
@@ -388,6 +404,35 @@ const PROMO_KIT_SCHEMA = {
         },
       },
     },
+    reels: {
+      type: "array",
+      description:
+        "EXACTLY 3 Instagram Reels variants, each a genuinely different angle — not rewordings.",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["caption", "hashtags", "videoIdea", "imageIndex"],
+        properties: {
+          caption: {
+            type: "string",
+            description:
+              "Reels caption of AT MOST 125 characters before the hashtags. 1-2 tasteful emoji ok. No raw URLs.",
+          },
+          hashtags: {
+            type: "array",
+            items: { type: "string" },
+            description:
+              "3-5 hashtags (each starting with #), mixing brand/wellness tags with local Southwest Florida tags.",
+          },
+          videoIdea: {
+            type: "string",
+            description:
+              "A vertical-video shot list of 3-5 beats, one beat per line, scroll-stopping first-second hook first — what Beth films and what on-screen text callouts say.",
+          },
+          imageIndex: IMAGE_INDEX_SCHEMA,
+        },
+      },
+    },
     facebook: {
       type: "array",
       description:
@@ -400,7 +445,7 @@ const PROMO_KIT_SCHEMA = {
           post: {
             type: "string",
             description:
-              "Facebook post of 2-3 short paragraphs ending with a call to action that includes the article link.",
+              "ONE short conversational paragraph of 2-3 sentences (roughly 40-80 words), ending with a one-line call to action and the article link on its own line. No multi-paragraph essays.",
           },
           imageIndex: IMAGE_INDEX_SCHEMA,
         },
@@ -535,6 +580,11 @@ function isTikTokVariant(value: unknown): value is TikTokVariant {
   return typeof (value as Record<string, unknown>).videoIdea === "string";
 }
 
+// Reels variants have the same shape as TikTok variants.
+function isReelsVariant(value: unknown): value is ReelsVariant {
+  return isTikTokVariant(value);
+}
+
 function isValidEmail(
   value: unknown
 ): value is PromoKitContent["email"] {
@@ -563,8 +613,8 @@ function isValidEmail(
 
 /**
  * Validate a stored/normalized promo kit (variants carry `image` srcs).
- * instagram/facebook/x must be non-empty; tiktok may be empty (kits
- * generated before TikTok support).
+ * instagram/facebook/x must be non-empty; tiktok and reels may be empty
+ * (kits generated before TikTok/Reels support).
  */
 function isValidPromoKit(value: unknown): value is PromoKitContent {
   if (typeof value !== "object" || value === null) return false;
@@ -575,6 +625,9 @@ function isValidPromoKit(value: unknown): value is PromoKitContent {
     kit.instagram.length === 0 ||
     !kit.instagram.every(isInstagramVariant)
   ) {
+    return false;
+  }
+  if (!Array.isArray(kit.reels) || !kit.reels.every(isReelsVariant)) {
     return false;
   }
   if (
@@ -622,6 +675,7 @@ function isValidGeneratedKit(value: unknown): value is GeneratedPromoKit {
 
   return (
     atLeastThree(kit.instagram, hasCaptionAndHashtags) &&
+    atLeastThree(kit.reels, isTikTok) &&
     atLeastThree(kit.facebook, isPost) &&
     atLeastThree(kit.x, isPost) &&
     atLeastThree(kit.tiktok, isTikTok) &&
@@ -634,8 +688,8 @@ function isValidGeneratedKit(value: unknown): value is GeneratedPromoKit {
  * Normalize a stored promo kit to the current multi-variant shape.
  * Old kits (instagram/facebook/x as single objects, email with a single
  * `subject`) become arrays of 1 + `subjects: [subject]`; variants without
- * an `image` get the article's hero image; kits without `tiktok` get an
- * empty tiktok array. Returns null if the value can't be normalized.
+ * an `image` get the article's hero image; kits without `tiktok`/`reels`
+ * get empty arrays for those. Returns null if the value can't be normalized.
  */
 export function normalizePromoKit(
   value: unknown,
@@ -668,6 +722,7 @@ export function normalizePromoKit(
 
   const candidate = {
     instagram: toArray(kit.instagram).map(withImage),
+    reels: toArray(kit.reels).map(withImage),
     facebook: toArray(kit.facebook).map(withImage),
     x: toArray(kit.x).map(withImage),
     tiktok: toArray(kit.tiktok).map(withImage),
@@ -678,8 +733,8 @@ export function normalizePromoKit(
 }
 
 /**
- * Generate a promo kit (Instagram, Facebook, X, TikTok, and email content)
- * as Beth McCarthy from a published-or-draft blog article. Variants carry
+ * Generate a promo kit (Instagram, Reels, Facebook, X, TikTok, and email
+ * content) as Beth McCarthy from a published-or-draft blog article. Variants carry
  * `imageIndex` references into `post.images` — the caller resolves them to
  * actual image srcs.
  */
@@ -705,7 +760,7 @@ async function generatePromoKitOnce(
     .map((img) => `${img.index}. ${img.caption}`)
     .join("\n");
   const prompt = [
-    "Create the promo kit (Instagram, Facebook, X, TikTok, and email) for this article — 3 variants per social platform and 3 email subject options, each variant a genuinely different angle.",
+    "Create the promo kit (Instagram, Instagram Reels, Facebook, X, TikTok, and email) for this article — 3 variants per social platform and 3 email subject options, each variant a genuinely different angle.",
     "",
     `Title: ${post.title}`,
     `Category: ${post.category}`,
@@ -772,6 +827,7 @@ async function generatePromoKitOnce(
   // Trim any extra variants/subjects to exactly 3 (schema can't cap lengths).
   return {
     instagram: parsed.instagram.slice(0, 3),
+    reels: parsed.reels.slice(0, 3),
     facebook: parsed.facebook.slice(0, 3),
     x: parsed.x.slice(0, 3),
     tiktok: parsed.tiktok.slice(0, 3),

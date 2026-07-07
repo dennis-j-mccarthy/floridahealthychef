@@ -14,7 +14,62 @@ type AdminPost = {
   starred: boolean;
   newsletteredAt: string | null;
   updatedAt: string;
+  body: string; // JSON blocks
 };
+
+type BodyBlock =
+  | { type: "h2"; text: string }
+  | { type: "p"; text: string }
+  | { type: "ul"; items: string[] };
+
+function parseBlocks(body: string): BodyBlock[] {
+  try {
+    const parsed = JSON.parse(body);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function ArticlePreview({ post }: { post: AdminPost }) {
+  const blocks = parseBlocks(post.body);
+  return (
+    <div className="mt-4 border-t border-light-2 pt-4">
+      <div className="relative mb-4 aspect-[2/1] w-full max-w-md overflow-hidden rounded-xl">
+        <Image src={post.image} alt="" fill sizes="448px" className="object-cover" />
+      </div>
+      {blocks.length === 0 ? (
+        <p className="text-sm font-light italic text-gray">
+          This article has no body content yet.
+        </p>
+      ) : (
+        <div className="max-w-2xl space-y-3">
+          {blocks.map((b, i) =>
+            b.type === "h2" ? (
+              <h3
+                key={i}
+                className="pt-2 text-[1em] font-semibold text-dark"
+                style={{ fontFamily: "var(--font-outfit), sans-serif" }}
+              >
+                {b.text}
+              </h3>
+            ) : b.type === "ul" ? (
+              <ul key={i} className="list-disc space-y-1 pl-5 text-sm font-light text-gray">
+                {b.items.map((item, j) => (
+                  <li key={j}>{item}</li>
+                ))}
+              </ul>
+            ) : (
+              <p key={i} className="text-sm font-light leading-relaxed text-gray">
+                {b.text}
+              </p>
+            )
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString("en-US", {
@@ -99,6 +154,7 @@ export default function BlogManager({
 }) {
   const [posts, setPosts] = useState(initialPosts);
   const [busyId, setBusyId] = useState<number | null>(null);
+  const [openId, setOpenId] = useState<number | null>(null); // one accordion at a time
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
 
@@ -228,7 +284,14 @@ export default function BlogManager({
         <div className="space-y-3">
           {posts.map((post) => (
             <div key={post.id} className="rounded-2xl bg-white p-4 shadow-sm">
-              <div className="flex items-start gap-4">
+              <div
+                className="flex cursor-pointer items-start gap-4"
+                role="button"
+                aria-expanded={openId === post.id}
+                onClick={() =>
+                  setOpenId((cur) => (cur === post.id ? null : post.id))
+                }
+              >
                 {/* Thumbnail */}
                 <div className="relative h-16 w-20 flex-none overflow-hidden rounded-lg bg-light-2">
                   <Image
@@ -243,7 +306,7 @@ export default function BlogManager({
                 {/* Title + meta */}
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="truncate text-sm font-medium text-dark">
+                    <h2 className="truncate text-[1em] font-medium text-dark">
                       {post.title}
                     </h2>
                     {!post.published && (
@@ -265,7 +328,10 @@ export default function BlogManager({
                       {post.category}
                     </span>
                     <span>Updated {formatDate(post.updatedAt)}</span>
-                    <label className="flex cursor-pointer items-center gap-1.5">
+                    <label
+                      className="flex cursor-pointer items-center gap-1.5"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <input
                         type="checkbox"
                         checked={post.published}
@@ -281,7 +347,10 @@ export default function BlogManager({
                 </div>
 
                 {/* Star + action icons */}
-                <div className="flex flex-none items-center gap-1">
+                <div
+                  className="flex flex-none items-center gap-1"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <button
                     onClick={() => patchPost(post, { starred: !post.starred })}
                     disabled={busyId === post.id}
@@ -341,6 +410,8 @@ export default function BlogManager({
                   </button>
                 </div>
               </div>
+
+              {openId === post.id && <ArticlePreview post={post} />}
             </div>
           ))}
         </div>

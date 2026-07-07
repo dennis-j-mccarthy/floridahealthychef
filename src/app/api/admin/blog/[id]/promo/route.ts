@@ -133,6 +133,12 @@ export async function POST(_request: Request, { params }: Params) {
       hashtags,
       image: resolveImage(imageIndex),
     })),
+    reels: raw.reels.map(({ caption, hashtags, videoIdea, imageIndex }) => ({
+      caption,
+      hashtags,
+      videoIdea,
+      image: resolveImage(imageIndex),
+    })),
     facebook: raw.facebook.map(({ post: fbPost, imageIndex }) => ({
       post: fbPost,
       image: resolveImage(imageIndex),

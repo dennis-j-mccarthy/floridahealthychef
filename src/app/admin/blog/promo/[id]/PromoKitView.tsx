@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import type {
   InstagramVariant,
   PromoKitContent,
+  ReelsVariant,
   TikTokVariant,
 } from "@/lib/claude";
 import type { BlogBlock } from "@/data/blog";
@@ -477,13 +478,80 @@ function TikTokPreview({
   );
 }
 
+function ReelsPreview({
+  variant,
+  imageUrl,
+}: {
+  variant: ReelsVariant;
+  imageUrl: string;
+}) {
+  return (
+    <div
+      className="relative w-full max-w-[300px] overflow-hidden rounded-2xl bg-black font-sans text-white shadow-sm"
+      style={{ aspectRatio: "9 / 16" }}
+    >
+      {/* Full-bleed variant photo */}
+      {imageUrl && (
+        <img
+          src={imageUrl}
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      )}
+      {/* Legibility gradient */}
+      <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+      {/* Right-side icon rail (Instagram Reels chrome) */}
+      <div className="absolute bottom-16 right-2 flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-0.5">
+          <HeartIcon className="h-7 w-7 drop-shadow" />
+          <span className="text-xs font-semibold drop-shadow">2.3K</span>
+        </div>
+        <div className="flex flex-col items-center gap-0.5">
+          <CommentIcon className="h-7 w-7 drop-shadow" />
+          <span className="text-xs font-semibold drop-shadow">104</span>
+        </div>
+        <div className="flex flex-col items-center gap-0.5">
+          <SendIcon className="h-7 w-7 drop-shadow" />
+          <span className="text-xs font-semibold drop-shadow">67</span>
+        </div>
+        <EllipsisIcon className="h-6 w-6 drop-shadow" />
+      </div>
+      {/* Bottom-left stack */}
+      <div className="absolute bottom-3 left-3 right-14">
+        <p className="flex items-center gap-2">
+          <Avatar size={24} />
+          <span className="truncate text-sm font-bold lowercase drop-shadow">
+            {IG_HANDLE}
+          </span>
+        </p>
+        <p className="mt-1.5 line-clamp-3 text-[13px] leading-snug drop-shadow">
+          {variant.caption}
+        </p>
+        <p className="mt-1 line-clamp-1 text-[13px] font-medium drop-shadow">
+          {variant.hashtags.join(" ")}
+        </p>
+        <p className="mt-2 flex items-center gap-1.5 text-xs drop-shadow">
+          <MusicNoteIcon className="h-3.5 w-3.5 shrink-0" />
+          <span className="truncate">{IG_HANDLE} · Original audio</span>
+        </p>
+      </div>
+    </div>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /* Main view                                                          */
 /* ------------------------------------------------------------------ */
 
 const cardClass = "rounded-2xl bg-white p-6 shadow-sm sm:p-8";
 
-type PlatformKey = "instagram" | "facebook" | "x" | "tiktok" | "email";
+type PlatformKey =
+  | "instagram"
+  | "reels"
+  | "facebook"
+  | "x"
+  | "tiktok"
+  | "email";
 
 export default function PromoKitView({
   postId,
@@ -504,6 +572,7 @@ export default function PromoKitView({
   const [copiedKey, setCopiedKey] = useState("");
   const [selected, setSelected] = useState<Record<PlatformKey, number>>({
     instagram: 0,
+    reels: 0,
     facebook: 0,
     x: 0,
     tiktok: 0,
@@ -550,7 +619,14 @@ export default function PromoKitView({
         return;
       }
       setKit(data.kit.content);
-      setSelected({ instagram: 0, facebook: 0, x: 0, tiktok: 0, email: 0 });
+      setSelected({
+        instagram: 0,
+        reels: 0,
+        facebook: 0,
+        x: 0,
+        tiktok: 0,
+        email: 0,
+      });
     } catch {
       setError("Could not reach the server. Please try again.");
     } finally {
@@ -623,7 +699,7 @@ export default function PromoKitView({
       <div className={`mt-8 ${cardClass}`}>
         <p className="text-base font-light text-gray">
           Turn this article into ready-to-post social content and a promo
-          email — Instagram, Facebook, X, TikTok, and a newsletter, all in
+          email — Instagram, Reels, Facebook, X, TikTok, and a newsletter, all in
           Beth&apos;s voice. You&apos;ll get three variant options per
           platform, each with a different angle and its own matching photo
           from your gallery.
@@ -656,18 +732,21 @@ export default function PromoKitView({
   }
 
   const igIndex = activeIndex("instagram", kit.instagram.length);
+  const rlIndex = activeIndex("reels", kit.reels.length);
   const fbIndex = activeIndex("facebook", kit.facebook.length);
   const xIndex = activeIndex("x", kit.x.length);
   const ttIndex = activeIndex("tiktok", kit.tiktok.length);
   const emailIndex = activeIndex("email", kit.email.subjects.length);
 
   const igVariant = kit.instagram[igIndex];
+  const rlVariant = kit.reels[rlIndex] as ReelsVariant | undefined;
   const fbVariant = kit.facebook[fbIndex];
   const xVariant = kit.x[xIndex];
   const ttVariant = kit.tiktok[ttIndex] as TikTokVariant | undefined;
   const emailSubject = kit.email.subjects[emailIndex];
 
   const igImage = variantImage(igVariant.image);
+  const rlImage = variantImage(rlVariant?.image);
   const fbImage = variantImage(fbVariant.image);
   const xImage = variantImage(xVariant.image);
   const ttImage = variantImage(ttVariant?.image);
@@ -697,6 +776,47 @@ export default function PromoKitView({
           />
           <DownloadImageLink src={igImage} />
         </div>
+      </div>
+
+      {/* Instagram Reels */}
+      <div className={cardClass}>
+        <h2 className="text-xl font-medium text-dark">Reels</h2>
+        {rlVariant ? (
+          <>
+            <OptionTabs platform="reels" count={kit.reels.length} />
+            <div className="mt-5">
+              <ReelsPreview variant={rlVariant} imageUrl={rlImage} />
+            </div>
+            <div className="mt-5 max-w-[500px] rounded-xl border border-light-2 bg-light p-4">
+              <p className="text-sm font-medium text-dark">Video idea</p>
+              <p className="mt-2 whitespace-pre-line text-sm font-light leading-relaxed text-dark">
+                {rlVariant.videoIdea}
+              </p>
+            </div>
+            <div className="mt-5 flex flex-wrap items-center gap-4">
+              <CopyButton
+                id={`reels-${rlIndex}`}
+                text={`${rlVariant.caption}\n\n${rlVariant.hashtags.join(" ")}`}
+              />
+              <button
+                onClick={() =>
+                  copyToClipboard(`reels-script-${rlIndex}`, rlVariant.videoIdea)
+                }
+                className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-olive ring-1 ring-olive/40 transition-colors hover:bg-olive/10"
+              >
+                {copiedKey === `reels-script-${rlIndex}`
+                  ? "Copied!"
+                  : "Copy video script"}
+              </button>
+              <DownloadImageLink src={rlImage} />
+            </div>
+          </>
+        ) : (
+          <p className="mt-4 text-base font-light text-gray">
+            This kit was generated before Reels support. Regenerate to get
+            Reels.
+          </p>
+        )}
       </div>
 
       {/* Facebook */}
