@@ -145,6 +145,11 @@ const icons = {
       />
     </svg>
   ),
+  chevron: (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+    </svg>
+  ),
 };
 
 export default function BlogManager({
@@ -292,6 +297,16 @@ export default function BlogManager({
                   setOpenId((cur) => (cur === post.id ? null : post.id))
                 }
               >
+                {/* Expand/collapse control */}
+                <span
+                  aria-hidden="true"
+                  className={`mt-5 flex h-6 w-6 flex-none items-center justify-center rounded-full bg-light text-gray transition-transform duration-200 ${
+                    openId === post.id ? "rotate-180" : ""
+                  }`}
+                >
+                  {icons.chevron}
+                </span>
+
                 {/* Thumbnail */}
                 <div className="relative h-16 w-20 flex-none overflow-hidden rounded-lg bg-light-2">
                   <Image
@@ -306,7 +321,7 @@ export default function BlogManager({
                 {/* Title + meta */}
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="truncate text-[1em] font-medium text-dark">
+                    <h2 className="truncate text-[1rem] font-medium text-dark">
                       {post.title}
                     </h2>
                     {!post.published && (

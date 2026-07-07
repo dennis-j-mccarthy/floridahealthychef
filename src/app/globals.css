@@ -48,9 +48,14 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.01em;
 }
 
-/* Admin page titles at half the default heading size */
+/* Admin heading sizes: compact, app-like */
 .admin-area h1 {
   font-size: 1.125rem;
+}
+.admin-area h2,
+.admin-area h3 {
+  font-size: 1rem;
+  line-height: 1.4;
 }
 
 h2 {
