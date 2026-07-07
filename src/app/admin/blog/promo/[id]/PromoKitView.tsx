@@ -568,6 +568,15 @@ export default function PromoKitView({
 }) {
   const [kit, setKit] = useState<PromoKitContent | null>(initialKit);
   const [generating, setGenerating] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+
+  // Tick a visible timer while a generation is running.
+  useEffect(() => {
+    if (!generating) return;
+    setElapsed(0);
+    const t = setInterval(() => setElapsed((s) => s + 1), 1000);
+    return () => clearInterval(t);
+  }, [generating]);
   const [error, setError] = useState("");
   const [copiedKey, setCopiedKey] = useState("");
   const [selected, setSelected] = useState<Record<PlatformKey, number>>({
@@ -632,6 +641,49 @@ export default function PromoKitView({
     } finally {
       setGenerating(false);
     }
+  }
+
+  function GeneratingOverlay() {
+    if (!generating) return null;
+    const mm = Math.floor(elapsed / 60);
+    const ss = String(elapsed % 60).padStart(2, "0");
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-dark/50 px-6">
+        <div className="w-full max-w-sm rounded-2xl bg-white p-8 text-center shadow-xl">
+          <svg
+            className="mx-auto h-10 w-10 animate-spin text-sage"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="9"
+              stroke="currentColor"
+              strokeOpacity="0.2"
+              strokeWidth="3"
+            />
+            <path
+              d="M21 12a9 9 0 0 0-9-9"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+          </svg>
+          <p className="mt-4 text-[1rem] font-medium text-dark">
+            Building your promo kit
+          </p>
+          <p className="mt-1 font-mono text-sm text-olive">
+            {mm}:{ss} elapsed
+          </p>
+          <p className="mt-3 text-sm font-light leading-relaxed text-gray">
+            Claude is writing 3 options each for Instagram, Reels, Facebook,
+            X, and TikTok, plus your email — and matching a photo to every
+            option. This usually takes 1–3 minutes. Keep this page open.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   function CopyButton({ id, text, label }: { id: string; text: string; label?: string }) {
@@ -727,6 +779,7 @@ export default function PromoKitView({
             ? "Generating… this can take 1-2 minutes"
             : "Generate social posts + email"}
         </button>
+        <GeneratingOverlay />
       </div>
     );
   }
@@ -761,6 +814,7 @@ export default function PromoKitView({
 
   return (
     <div className="mt-8 space-y-6">
+      <GeneratingOverlay />
       {error && (
         <p className="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">
           {error}
