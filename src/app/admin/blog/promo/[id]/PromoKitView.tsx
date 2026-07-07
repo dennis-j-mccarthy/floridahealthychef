@@ -441,6 +441,17 @@ function TikTokPreview({
       )}
       {/* Legibility gradient */}
       <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+      {/* Video affordance: play button + cover-frame chip */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-black/45 backdrop-blur-sm">
+          <svg viewBox="0 0 24 24" fill="white" className="ml-1 h-7 w-7" aria-hidden="true">
+            <path d="M8 5.14v13.72c0 .8.87 1.3 1.56.88l10.54-6.86a1.05 1.05 0 0 0 0-1.76L9.56 4.26A1.05 1.05 0 0 0 8 5.14Z" />
+          </svg>
+        </span>
+      </div>
+      <span className="absolute left-2 top-2 rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-white/90 backdrop-blur-sm">
+        Suggested cover frame
+      </span>
       {/* Right-side icon rail */}
       <div className="absolute bottom-16 right-2 flex flex-col items-center gap-4">
         <div className="flex flex-col items-center gap-0.5">
@@ -500,6 +511,17 @@ function ReelsPreview({
       )}
       {/* Legibility gradient */}
       <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+      {/* Video affordance: play button + cover-frame chip */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-black/45 backdrop-blur-sm">
+          <svg viewBox="0 0 24 24" fill="white" className="ml-1 h-7 w-7" aria-hidden="true">
+            <path d="M8 5.14v13.72c0 .8.87 1.3 1.56.88l10.54-6.86a1.05 1.05 0 0 0 0-1.76L9.56 4.26A1.05 1.05 0 0 0 8 5.14Z" />
+          </svg>
+        </span>
+      </div>
+      <span className="absolute left-2 top-2 rounded-full bg-black/55 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-white/90 backdrop-blur-sm">
+        Suggested cover frame
+      </span>
       {/* Right-side icon rail (Instagram Reels chrome) */}
       <div className="absolute bottom-16 right-2 flex flex-col items-center gap-4">
         <div className="flex flex-col items-center gap-0.5">
