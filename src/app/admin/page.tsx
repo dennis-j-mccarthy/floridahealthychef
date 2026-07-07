@@ -130,7 +130,7 @@ export default async function AdminPage() {
 
   return (
     <section className="min-h-screen bg-light pt-44 pb-20">
-      <div className="mx-auto max-w-[1000px] px-6">
+      <div className="mx-auto max-w-[1600px] px-6">
         {/* Header */}
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="flex items-center gap-4">

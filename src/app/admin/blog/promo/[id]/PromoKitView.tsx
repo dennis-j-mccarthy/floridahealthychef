@@ -10,6 +10,8 @@ import type {
   TikTokVariant,
 } from "@/lib/claude";
 import type { BlogBlock } from "@/data/blog";
+import SlideshowVideoModal from "./SlideshowVideoModal";
+import RecordVideoModal from "./RecordVideoModal";
 
 const SAGE = "#939d3c";
 const LINK_BLUE = "#1877f2";
@@ -239,6 +241,30 @@ function MusicNoteIcon({ className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
       <path d="M9 18.5a3.25 3.25 0 1 1-2-3V4.6a1 1 0 0 1 .8-.98l10-2A1 1 0 0 1 19 2.6v13.4a3.25 3.25 0 1 1-2-3V7.32L9 8.92z" />
+    </svg>
+  );
+}
+
+function FilmIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <rect x="2" y="3" width="20" height="18" rx="2.2" />
+      <line x1="7" y1="3" x2="7" y2="21" />
+      <line x1="17" y1="3" x2="17" y2="21" />
+      <line x1="2" y1="12" x2="22" y2="12" />
+      <line x1="2" y1="7.5" x2="7" y2="7.5" />
+      <line x1="2" y1="16.5" x2="7" y2="16.5" />
+      <line x1="17" y1="7.5" x2="22" y2="7.5" />
+      <line x1="17" y1="16.5" x2="22" y2="16.5" />
+    </svg>
+  );
+}
+
+function CameraIcon({ className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <path d="M23 7l-7 5 7 5V7z" />
+      <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
     </svg>
   );
 }
@@ -609,6 +635,10 @@ export default function PromoKitView({
     tiktok: 0,
     email: 0,
   });
+  const [videoTool, setVideoTool] = useState<{
+    tool: "slideshow" | "record";
+    platform: "reels" | "tiktok";
+  } | null>(null);
   const copyTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -755,6 +785,27 @@ export default function PromoKitView({
     return image || heroImageUrl;
   }
 
+  function VideoToolButtons({ platform }: { platform: "reels" | "tiktok" }) {
+    return (
+      <>
+        <button
+          onClick={() => setVideoTool({ tool: "slideshow", platform })}
+          className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-medium text-olive ring-1 ring-sage transition-colors hover:bg-sage/10"
+        >
+          <FilmIcon className="h-4 w-4" />
+          Build slideshow video
+        </button>
+        <button
+          onClick={() => setVideoTool({ tool: "record", platform })}
+          className="flex items-center gap-2 rounded-lg bg-dark px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-dark/85"
+        >
+          <CameraIcon className="h-4 w-4" />
+          Make a video
+        </button>
+      </>
+    );
+  }
+
   function DownloadImageLink({ src }: { src: string }) {
     if (!src) return null;
     return (
@@ -835,16 +886,16 @@ export default function PromoKitView({
     kit.tiktok.length === 0;
 
   return (
-    <div className="mt-8 space-y-6">
+    <div className="mt-8 grid grid-cols-1 gap-6 2xl:grid-cols-2">
       <GeneratingOverlay />
       {error && (
-        <p className="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary">
+        <p className="rounded-lg bg-primary/10 px-4 py-3 text-sm text-primary 2xl:col-span-2">
           {error}
         </p>
       )}
 
       {isOutdated && (
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 2xl:col-span-2">
           <p className="text-sm font-light text-dark">
             This kit was made with an older version — regenerate to get{" "}
             <span className="font-medium">
@@ -909,6 +960,7 @@ export default function PromoKitView({
                   ? "Copied!"
                   : "Copy video script"}
               </button>
+              <VideoToolButtons platform="reels" />
               <DownloadImageLink src={rlImage} />
             </div>
           </>
@@ -979,6 +1031,7 @@ export default function PromoKitView({
                   ? "Copied!"
                   : "Copy video script"}
               </button>
+              <VideoToolButtons platform="tiktok" />
               <DownloadImageLink src={ttImage} />
             </div>
           </>
@@ -991,7 +1044,7 @@ export default function PromoKitView({
       </div>
 
       {/* Email */}
-      <div className={cardClass}>
+      <div className={`${cardClass} 2xl:col-span-2`}>
         <h2 className="text-xl font-medium text-dark">Email</h2>
 
         <div className="mt-4 space-y-4">
@@ -1093,7 +1146,7 @@ export default function PromoKitView({
       </div>
 
       {/* Regenerate */}
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <div className="flex flex-col gap-3 sm:flex-row 2xl:col-span-2">
         <button
           onClick={() => generate(true)}
           disabled={generating}
@@ -1104,6 +1157,39 @@ export default function PromoKitView({
             : "Regenerate"}
         </button>
       </div>
+
+      {/* Video tool modals (open on the ACTIVE Reels/TikTok variant) */}
+      {videoTool &&
+        (() => {
+          const isReels = videoTool.platform === "reels";
+          const activeVariant = isReels ? rlVariant : ttVariant;
+          if (!activeVariant) return null;
+          const variants = isReels ? kit.reels : kit.tiktok;
+          const activeIdx = isReels ? rlIndex : ttIndex;
+          if (videoTool.tool === "record") {
+            return (
+              <RecordVideoModal
+                platform={videoTool.platform}
+                videoIdea={activeVariant.videoIdea}
+                onClose={() => setVideoTool(null)}
+              />
+            );
+          }
+          return (
+            <SlideshowVideoModal
+              platform={videoTool.platform}
+              optionNumber={activeIdx + 1}
+              caption={activeVariant.caption}
+              videoIdea={activeVariant.videoIdea}
+              activeImage={variantImage(activeVariant.image)}
+              otherImages={variants
+                .filter((_, i) => i !== activeIdx)
+                .map((v) => variantImage(v.image))}
+              heroImageUrl={heroImageUrl}
+              onClose={() => setVideoTool(null)}
+            />
+          );
+        })()}
     </div>
   );
 }

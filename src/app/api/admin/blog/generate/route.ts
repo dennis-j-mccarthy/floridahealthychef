@@ -99,9 +99,38 @@ export async function POST(request: Request) {
   }
 
   try {
-    const article = await generateArticle(title, bullets, imageInput);
+    // No uploaded photo? Let Claude pick the best-fit hero from the
+    // captioned gallery so every article gets a distinct, relevant image.
+    let galleryChoices: { index: number; caption: string; src: string }[] = [];
+    if (!imageFile) {
+      const items = await prisma.galleryItem.findMany({
+        where: { caption: { not: "" } },
+        orderBy: { position: "asc" },
+        select: { src: true, caption: true },
+      });
+      galleryChoices = items.map((g, i) => ({
+        index: i,
+        caption: g.caption,
+        src: g.src,
+      }));
+    }
 
-    const imagePath = imageFile ? await saveBlogImage(imageFile) : DEFAULT_IMAGE;
+    const article = await generateArticle(
+      title,
+      bullets,
+      imageInput,
+      galleryChoices.length
+        ? galleryChoices.map(({ index, caption }) => ({ index, caption }))
+        : undefined
+    );
+
+    const pickedSrc =
+      article.imageIndex !== undefined
+        ? galleryChoices[article.imageIndex]?.src
+        : undefined;
+    const imagePath = imageFile
+      ? await saveBlogImage(imageFile)
+      : pickedSrc ?? DEFAULT_IMAGE;
     const slug = await uniqueSlug(slugify(title));
 
     const post = await prisma.blogPost.create({

@@ -62,7 +62,7 @@ export default async function EditArticlePage({ params, searchParams }: Props) {
 
   return (
     <section className="min-h-screen bg-light pt-44 pb-20">
-      <div className="mx-auto max-w-[1000px] px-6">
+      <div className="mx-auto max-w-[1600px] px-6">
         <Link
           href="/admin/blog"
           className="text-sm font-light text-gray transition-colors hover:text-dark"

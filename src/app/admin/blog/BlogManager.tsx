@@ -150,6 +150,22 @@ const icons = {
       <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
     </svg>
   ),
+  globe: (filled: boolean) => (
+    <svg
+      className="h-[18px] w-[18px]"
+      viewBox="0 0 24 24"
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth={1.5}
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path
+        stroke={filled ? "white" : "currentColor"}
+        strokeLinecap="round"
+        d="M3.6 9h16.8M3.6 15h16.8M12 3a15.3 15.3 0 0 1 0 18M12 3a15.3 15.3 0 0 0 0 18"
+      />
+    </svg>
+  ),
 };
 
 export default function BlogManager({
@@ -343,21 +359,6 @@ export default function BlogManager({
                       {post.category}
                     </span>
                     <span>Updated {formatDate(post.updatedAt)}</span>
-                    <label
-                      className="flex cursor-pointer items-center gap-1.5"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={post.published}
-                        disabled={busyId === post.id}
-                        onChange={() =>
-                          patchPost(post, { published: !post.published })
-                        }
-                        className="h-4 w-4 accent-olive"
-                      />
-                      Published
-                    </label>
                   </p>
                 </div>
 
@@ -386,6 +387,29 @@ export default function BlogManager({
                     }`}
                   >
                     {icons.star(post.starred)}
+                  </button>
+                  <button
+                    onClick={() =>
+                      patchPost(post, { published: !post.published })
+                    }
+                    disabled={busyId === post.id}
+                    aria-label={
+                      post.published
+                        ? "Published — click to unpublish"
+                        : "Draft — click to publish"
+                    }
+                    title={
+                      post.published
+                        ? "Published — click to unpublish"
+                        : "Draft — click to publish"
+                    }
+                    className={`${iconBtn} ${
+                      post.published
+                        ? "text-olive hover:bg-olive/10"
+                        : "text-gray-light hover:bg-light hover:text-olive"
+                    }`}
+                  >
+                    {icons.globe(post.published)}
                   </button>
                   <Link
                     href={`/admin/blog/edit/${post.id}`}

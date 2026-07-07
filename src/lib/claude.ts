@@ -5,7 +5,11 @@ export type GeneratedArticle = {
   excerpt: string;
   category: string;
   body: BlogBlock[];
+  /** Present when imageChoices were provided: index of the best-fit photo. */
+  imageIndex?: number;
 };
+
+export type ImageChoice = { index: number; caption: string };
 
 const SYSTEM_PROMPT = `You are Beth McCarthy, Southwest Florida's Certified Natural Chef and personal healthy chef, writing an article for the Wellness Journal blog on your website, floridahealthychef.com.
 
@@ -111,11 +115,12 @@ function isValidBlock(block: unknown): block is BlogBlock {
 export async function generateArticle(
   title: string,
   bullets: string[],
-  image?: ImageInput
+  image?: ImageInput,
+  imageChoices?: ImageChoice[]
 ): Promise<GeneratedArticle> {
   // Occasionally the model returns valid JSON with an empty body — retry once.
   for (let attempt = 0; attempt < 2; attempt++) {
-    const article = await generateArticleOnce(title, bullets, image);
+    const article = await generateArticleOnce(title, bullets, image, imageChoices);
     if (article.body.length > 0) return article;
   }
   throw new ClaudeGenerationError(
@@ -126,7 +131,8 @@ export async function generateArticle(
 async function generateArticleOnce(
   title: string,
   bullets: string[],
-  image?: ImageInput
+  image?: ImageInput,
+  imageChoices?: ImageChoice[]
 ): Promise<GeneratedArticle> {
   const prompt = [
     `Write a blog article with this title: "${title}"`,
@@ -137,6 +143,12 @@ async function generateArticleOnce(
     image
       ? "The attached photo will be the article's hero image — reference it naturally in the article."
       : "",
+    ...(imageChoices && imageChoices.length > 0
+      ? [
+          "Choose a hero image for the article from these photos (pick the one whose subject best matches the article; return its number as imageIndex):",
+          ...imageChoices.map((c) => `${c.index}: ${c.caption}`),
+        ]
+      : []),
     "Return the excerpt, category, and article body.",
   ]
     .filter((line, i, arr) => line !== "" || arr[i - 1] !== "")
@@ -166,7 +178,25 @@ async function generateArticleOnce(
       thinking: { type: "adaptive" },
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content }],
-      output_config: { format: { type: "json_schema", schema: ARTICLE_SCHEMA } },
+      output_config: {
+        format: {
+          type: "json_schema",
+          schema: imageChoices?.length
+            ? {
+                ...ARTICLE_SCHEMA,
+                required: [...ARTICLE_SCHEMA.required, "imageIndex"],
+                properties: {
+                  ...ARTICLE_SCHEMA.properties,
+                  imageIndex: {
+                    type: "integer",
+                    description:
+                      "The number of the photo (from the provided list) that best fits this article.",
+                  },
+                },
+              }
+            : ARTICLE_SCHEMA,
+        },
+      },
     });
   } catch (error) {
     if (error instanceof Anthropic.AuthenticationError) {
@@ -211,6 +241,10 @@ async function generateArticleOnce(
     excerpt: article.excerpt,
     category: article.category,
     body: article.body,
+    imageIndex:
+      typeof (article as { imageIndex?: unknown }).imageIndex === "number"
+        ? ((article as { imageIndex?: number }).imageIndex as number)
+        : undefined,
   };
 }
 
