@@ -65,26 +65,26 @@ export default function MovingHero() {
                 sizes="100vw"
                 quality={85}
                 className="object-cover"
-                style={{ objectPosition: s.focus }}
+                style={{ objectPosition: s.focus, filter: "saturate(1.35) contrast(1.08) brightness(1.04)" }}
               />
             </div>
           </div>
         );
       })}
 
-      {/* Legibility: warm gradient from the left, soft vignette at the bottom */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-dark/75 via-dark/35 to-transparent" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-dark/60 to-transparent" />
+      {/* Legibility: a faint shade plus a frosted panel behind the copy, so the photos stay vivid */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_45%_70%_at_25%_50%,rgba(0,0,0,0.25),transparent_75%)]" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/30 to-transparent" />
 
       {/* Copy */}
       <div className="relative z-10 mx-auto flex h-full max-w-[1200px] items-center px-6 pb-8">
-        <div className="max-w-xl text-white">
+        <div className="max-w-[440px] rounded-2xl bg-black/30 p-7 text-white backdrop-blur-[6px] md:p-10 [text-shadow:0_1px_3px_rgba(0,0,0,0.55),0_2px_18px_rgba(0,0,0,0.35)]">
           <div className="moving-hero-rise mb-5 h-0.5 w-16 bg-sage" style={{ animationDelay: "100ms" }} />
           <p className="moving-hero-rise text-sm font-medium uppercase tracking-[0.3em] text-white/90" style={{ animationDelay: "250ms" }}>
             Southwest Florida&apos;s
           </p>
           <h1
-            className="moving-hero-rise mt-3 font-[family-name:var(--font-great-vibes)] text-5xl leading-[1.05] text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)] md:text-8xl"
+            className="moving-hero-rise mt-3 font-[family-name:var(--font-great-vibes)] text-5xl leading-[1.05] text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)] md:text-7xl"
             style={{ animationDelay: "450ms" }}
           >
             Healthiest Personal Chef

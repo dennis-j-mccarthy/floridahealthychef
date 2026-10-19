@@ -1,7 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import TestimonialCarousel from "@/components/TestimonialCarousel";
-import NewsletterForm from "@/components/NewsletterForm";
 
 // NOTE: the live site's fifth archive card is February (no March issue exists
 // on Mailchimp), but we only have March artwork locally — so the March card is
@@ -258,32 +257,6 @@ export default function HomeSections() {
               </Link>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Newsletter Signup */}
-      <section className="py-20 bg-green-light">
-        <div className="mx-auto max-w-xl px-6 text-center">
-          <Image
-            src="/images/icons/email.svg"
-            alt=""
-            width={48}
-            height={48}
-            className="mx-auto mb-6"
-          />
-          <h2 className="text-3xl font-normal text-dark">
-            Free recipes on your inbox
-          </h2>
-          <p className="mt-4 text-sm font-light text-gray">
-            Subscribe to our newsletter and receive our best recipes of the week,
-            right on your inbox.
-          </p>
-          <div className="mt-8">
-            <NewsletterForm source="home" />
-          </div>
-          <p className="mt-6 text-xs text-gray-light">
-            Join the 10,000+ persons that choose healthy food
-          </p>
         </div>
       </section>
 
