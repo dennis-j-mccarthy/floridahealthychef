@@ -68,3 +68,60 @@ h2 {
     font-size: 3.5rem;
   }
 }
+
+
+/* /welcome alternate homepage: moving-picture hero and food strip */
+@keyframes moving-hero-kenburns {
+  from { transform: var(--kb-from); }
+  to { transform: var(--kb-to); }
+}
+.moving-hero-kenburns {
+  animation-name: moving-hero-kenburns;
+  animation-timing-function: linear;
+  animation-fill-mode: both;
+  will-change: transform;
+}
+
+@keyframes moving-hero-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.moving-hero-rise {
+  animation: moving-hero-rise 1s ease-out both;
+}
+
+@keyframes moving-hero-progress {
+  from { width: 0; }
+  to { width: 100%; }
+}
+.moving-hero-progress {
+  animation-name: moving-hero-progress;
+  animation-timing-function: linear;
+  animation-fill-mode: both;
+}
+
+@keyframes moving-hero-caption {
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.moving-hero-caption {
+  animation: moving-hero-caption 1.2s ease-out both;
+}
+
+@keyframes food-strip-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.food-strip-track {
+  animation: food-strip-scroll 70s linear infinite;
+}
+.food-strip:hover .food-strip-track {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .moving-hero-kenburns,
+  .food-strip-track {
+    animation: none;
+  }
+}
