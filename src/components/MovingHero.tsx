@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-// Full-screen slow-zoom crossfade for the /welcome alternate homepage.
+// Full-screen slow-zoom crossfade for the /home-alt alternate homepage.
 // Only the larger photos are used here; the small portrait food shots live in
 // the scrolling strip below the hero, where they stay sharp.
 const slides = [

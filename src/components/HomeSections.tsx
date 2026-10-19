@@ -96,7 +96,7 @@ const mediaLogos = [
   { name: "Featured Chef - Gulf Shore Life Magazine", image: "/images/media/gulf-shore-life.png" },
 ];
 
-// Everything on the homepage below the hero, shared by / and the /welcome
+// Everything on the homepage below the hero, shared by / and the /home-alt
 // alternate homepage.
 export default function HomeSections() {
   return (

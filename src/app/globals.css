@@ -70,7 +70,7 @@ h2 {
 }
 
 
-/* /welcome alternate homepage: moving-picture hero and food strip */
+/* /home-alt alternate homepage: moving-picture hero and food strip */
 @keyframes moving-hero-kenburns {
   from { transform: var(--kb-from); }
   to { transform: var(--kb-to); }

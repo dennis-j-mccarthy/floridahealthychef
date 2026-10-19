@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function WelcomePage() {
+export default function HomeAltPage() {
   return (
     <>
       <MovingHero />

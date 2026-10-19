@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-// Slowly scrolling ribbon of Beth's plates under the /welcome hero. The list is
+// Slowly scrolling ribbon of Beth's plates under the /home-alt hero. The list is
 // rendered twice so the -50% loop in .food-strip-track is seamless.
 const photos = [
   "img28", "img20", "img40", "img27", "img25", "img39", "img48", "img13",
