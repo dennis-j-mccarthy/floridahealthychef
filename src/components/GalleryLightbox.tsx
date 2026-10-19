@@ -11,7 +11,36 @@ export type GalleryImage = {
   caption?: string;
 };
 
-export default function GalleryLightbox({ images }: { images: GalleryImage[] }) {
+// Mosaic tile shapes, repeated down the page. grid-flow-dense back-fills the
+// gaps, so the pattern reads as a varied mosaic rather than rows.
+const MOSAIC = [
+  "col-span-2 row-span-2", // big
+  "row-span-2", // tall
+  "", "", "",
+  "col-span-2", // wide
+  "row-span-2",
+  "",
+  "col-span-2 row-span-2",
+  "", "",
+  "col-span-2",
+];
+
+function tileClass(img: GalleryImage, i: number) {
+  const shape = MOSAIC[i % MOSAIC.length];
+  // A landscape photo looks wrong squeezed into a tall tile; give it a wide one.
+  if (img.width > img.height * 1.15 && shape === "row-span-2") return "col-span-2";
+  return shape;
+}
+
+export default function GalleryLightbox({ images: allImages }: { images: GalleryImage[] }) {
+  // Photos whose file will not load (e.g. an upload host that is down) are
+  // dropped from both the mosaic and the lightbox instead of showing a broken tile.
+  const [failed, setFailed] = useState<Set<string>>(() => new Set());
+  const images = allImages.filter((img) => !failed.has(img.src));
+  const markFailed = useCallback(
+    (src: string) => setFailed((f) => (f.has(src) ? f : new Set(f).add(src))),
+    []
+  );
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const close = useCallback(() => setOpenIndex(null), []);
@@ -46,30 +75,30 @@ export default function GalleryLightbox({ images }: { images: GalleryImage[] }) 
 
   return (
     <>
-      {/* Masonry-style grid */}
-      <div className="columns-1 gap-5 sm:columns-2 lg:columns-3">
+      {/* Mosaic grid */}
+      <div className="grid auto-rows-[160px] grid-cols-2 gap-3 [grid-auto-flow:dense] sm:auto-rows-[200px] md:grid-cols-4 md:gap-4 lg:auto-rows-[230px]">
         {images.map((img, i) => (
           <button
             key={img.src}
             type="button"
             onClick={() => setOpenIndex(i)}
-            className="group relative mb-5 block w-full cursor-pointer break-inside-avoid overflow-hidden rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            className={`group relative block h-full w-full cursor-pointer overflow-hidden rounded-xl bg-light-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${tileClass(img, i)}`}
             aria-label={`View ${img.alt}`}
           >
             <Image
               src={img.src}
               alt={img.alt}
-              width={img.width}
-              height={img.height}
-              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-              className="h-auto w-full transition-transform duration-300 group-hover:scale-[1.03]"
+              fill
+              sizes="(min-width: 768px) 50vw, 100vw"
+              onError={() => markFailed(img.src)}
+              className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
             />
             {img.caption ? (
               <span
-                className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent px-4 pb-3 pt-14 text-left text-sm font-normal text-white [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]"
+                className="pointer-events-none absolute inset-x-0 bottom-0 hidden bg-gradient-to-t from-black/85 via-black/50 to-transparent px-4 pb-3 pt-12 text-left text-sm font-normal text-white opacity-0 transition-opacity duration-300 [text-shadow:0_1px_3px_rgba(0,0,0,0.8)] group-hover:opacity-100 group-focus-visible:opacity-100 md:block"
                 aria-hidden="true"
               >
-                {img.caption}
+                <span className="line-clamp-2">{img.caption}</span>
               </span>
             ) : null}
           </button>
