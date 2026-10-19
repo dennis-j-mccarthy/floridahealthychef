@@ -36,10 +36,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 function Block({ block }: { block: BlogBlock }) {
   switch (block.type) {
     case "h2":
-      return <h2 className="mt-12 text-3xl font-normal text-dark">{block.text}</h2>;
+      return <h2 className="font-[family-name:var(--font-josefin-sans)]! font-light! mt-12 text-[26px]! leading-[30px]! text-dark">{block.text}</h2>;
     case "p":
       return (
-        <p className="mt-6 text-base font-light leading-loose text-gray">
+        <p className="mt-6 text-lg font-light leading-[30px] text-[#5f5f5f]">
           {block.text}
         </p>
       );
@@ -49,7 +49,7 @@ function Block({ block }: { block: BlogBlock }) {
           {block.items.map((item) => (
             <li
               key={item}
-              className="flex gap-3 text-base font-light leading-relaxed text-gray"
+              className="flex gap-3 text-base font-light leading-relaxed text-[#5f5f5f]"
             >
               <span className="mt-[3px] text-primary" aria-hidden="true">
                 ✦
@@ -92,7 +92,7 @@ export default async function BlogArticlePage({ params }: Props) {
               {post.category}
             </span>
           </div>
-          <h1 className="mt-6 text-4xl font-light text-dark md:text-5xl">
+          <h1 className="font-[family-name:var(--font-josefin-sans)]! font-light! mt-6 text-4xl leading-tight text-dark md:text-[52px]">
             {post.title}
           </h1>
           <p className="mt-4 text-sm font-light text-gray">
@@ -150,7 +150,7 @@ export default async function BlogArticlePage({ params }: Props) {
                   <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-light text-primary">
                     {other.category}
                   </span>
-                  <h3 className="mt-3 text-base font-semibold leading-tight text-dark transition-colors group-hover:text-olive">
+                  <h3 className="font-[family-name:var(--font-dm-sans)]! font-normal! mt-3 text-sm leading-snug text-dark transition-colors group-hover:text-olive">
                     {other.title}
                   </h3>
                 </div>

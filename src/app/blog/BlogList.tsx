@@ -67,7 +67,7 @@ export default function BlogList({ posts }: { posts: BlogListPost[] }) {
                 <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-light text-primary">
                   {post.category}
                 </span>
-                <h2 className="mt-4 text-2xl font-semibold text-dark transition-colors group-hover:text-olive">
+                <h2 className="font-[family-name:var(--font-josefin-sans)]! font-light! mt-4 text-[26px]! leading-[30px]! text-dark transition-colors group-hover:text-olive">
                   {post.title}
                 </h2>
                 <p className="mt-3 text-sm font-light leading-relaxed text-gray">

@@ -155,11 +155,18 @@ export default function Home() {
       </section>
 
       {/* About Beth */}
-      <section className="py-24 bg-white">
+      <section className="py-24 bg-white overflow-x-clip">
         <div className="mx-auto max-w-[1200px] px-6">
           <div className="grid items-start gap-16 lg:grid-cols-2">
             {/* Left: Photo with overlapping name card */}
-            <div className="relative">
+            <div className="relative isolate">
+              {/* Watercolor wash spilling out behind the photo's lower right (carried over from the Webflow site) */}
+              <div
+                className="pointer-events-none absolute -z-10 aspect-[1502/1112] w-[97%]"
+                style={{ left: "115%", top: "81%", transform: "translate(-50%, -50%) rotate(106deg)" }}
+              >
+                <Image src="/images/florals/splash.png" alt="" fill className="object-contain" />
+              </div>
               <div className="relative aspect-[3/4] overflow-hidden">
                 <Image
                   src="/images/about/beth-chef-coat.png"
@@ -175,8 +182,8 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Right: Text content */}
-            <div className="pt-12 lg:pt-24">
+            {/* Right: Text content (sits above the watercolor wash) */}
+            <div className="relative z-10 pt-12 lg:pt-24">
               <div className="w-20 h-0.5 bg-olive mb-8" />
               <h2 className="text-4xl md:text-5xl text-dark leading-tight">
                 About Beth McCarthy

@@ -26,8 +26,16 @@ export default function ParallaxHero() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="bg-white overflow-hidden" style={{ paddingTop: "12%", paddingBottom: "80px" }}>
-      <div className="mx-auto max-w-[1200px] px-6">
+    <section ref={sectionRef} className="relative bg-white overflow-hidden" style={{ paddingTop: "12%", paddingBottom: "80px" }}>
+      {/* Watercolor wash, top right (carried over from the Webflow site) */}
+      <Image
+        src="/images/florals/splash.png"
+        alt=""
+        width={400}
+        height={296}
+        className="pointer-events-none absolute top-20 right-0 w-[400px] max-w-[60vw] h-auto"
+      />
+      <div className="relative mx-auto max-w-[1200px] px-6">
         <div className="grid lg:grid-cols-[1fr_1.5fr] gap-12 items-start">
           {/* Left: Text */}
           <div
