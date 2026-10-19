@@ -43,15 +43,8 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom bar — logo + copyright */}
-        <div className="mt-14 flex flex-col items-center gap-6 md:flex-row md:justify-between">
-          <Image
-            src="/images/logo.png"
-            alt="Joyful Wellness with Beth"
-            width={160}
-            height={160}
-            className="h-20 w-auto"
-          />
+        {/* Bottom bar — copyright (the logo already sits in the card above) */}
+        <div className="mt-10 flex justify-center">
           <p className="text-base font-light text-dark">
             Copyright &copy; Beth McCarthy, {new Date().getFullYear()}
             <a
