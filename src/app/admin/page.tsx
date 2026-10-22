@@ -80,6 +80,15 @@ const icons = {
       />
     </svg>
   ),
+  share: (
+    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M7.22 10.94a3 3 0 1 0 0 2.12m0-2.12a3 3 0 1 1 0 2.12m0-2.12 9.56-5.38m-9.56 7.5 9.56 5.38m0 0a3 3 0 1 0 2.94-5.12 3 3 0 0 0-2.94 5.12Zm0-10.76a3 3 0 1 0 2.94-5.12 3 3 0 0 0-2.94 5.12Z"
+      />
+    </svg>
+  ),
 };
 
 export default async function AdminPage() {
@@ -213,6 +222,28 @@ export default async function AdminPage() {
             </p>
             <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-olive">
               {icons.photo} {galleryCount} photos live
+            </p>
+          </Link>
+
+          <Link
+            href="/admin/social"
+            className="group rounded-2xl bg-white p-6 shadow-sm ring-1 ring-transparent transition hover:shadow-md hover:ring-sage/30"
+          >
+            <div className="flex items-start justify-between">
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-sage/10 text-sage">
+                {icons.share}
+              </span>
+              <span className="mt-1 text-gray-light transition-transform group-hover:translate-x-1 group-hover:text-sage">
+                {icons.arrow}
+              </span>
+            </div>
+            <h2 className="mt-4 text-dark">Social</h2>
+            <p className="mt-1 text-sm font-light leading-relaxed text-gray">
+              Publish and schedule posts to Beth&apos;s Facebook Page and
+              Instagram directly from the site through Meta&apos;s API.
+            </p>
+            <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-olive">
+              {icons.share} Facebook + Instagram
             </p>
           </Link>
         </div>

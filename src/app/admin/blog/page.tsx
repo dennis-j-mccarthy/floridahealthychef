@@ -44,6 +44,12 @@ export default async function BlogAdminPage() {
           <h1 className="text-4xl text-dark">Blog Articles</h1>
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
             <Link
+              href="/admin/blog/ideas"
+              className="rounded-lg border border-light-2 bg-white px-5 py-3 text-center text-sm font-medium text-dark transition-colors hover:bg-light"
+            >
+              Title Ideas
+            </Link>
+            <Link
               href="/admin/blog/generate"
               className="rounded-lg bg-primary px-5 py-3 text-center text-sm font-medium text-white transition-colors hover:bg-primary-dark"
             >

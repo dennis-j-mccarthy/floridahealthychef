@@ -868,3 +868,291 @@ async function generatePromoKitOnce(
     email: { ...parsed.email, subjects: parsed.email.subjects.slice(0, 3) },
   };
 }
+
+/* ------------------------------------------------------------------ */
+/* Tone-driven blog generation (title ideas → full draft)             */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Editable tone settings that shape the voice of generated titles and
+ * articles. Persisted as a singleton (see `@/lib/blogSettings`). Each field
+ * is optional; blanks fall back to Beth's default voice in the prompt.
+ */
+export type BlogTone = {
+  voice: string;
+  audience: string;
+  style: string;
+  /** Do's — one guideline per line. */
+  dos: string;
+  /** Don'ts — one guideline per line. */
+  donts: string;
+};
+
+/** Beth's warm healthy-cooking voice — the default tone. */
+export const DEFAULT_TONE: BlogTone = {
+  voice:
+    "Warm, welcoming, and encouraging, written in the first person (\"I\") as if chatting with a friend over a beautiful plate of food.",
+  audience:
+    "Health-minded home cooks and busy families in Southwest Florida (Naples, Bonita Springs, Estero, Fort Myers, Punta Gorda) looking to eat well without fuss.",
+  style:
+    "Practical and generous with tips, celebrating fresh, organic, locally sourced ingredients and the idea of food as medicine. Clear structure with short sections and the occasional list.",
+  dos: [
+    "Give readers something they can actually do in their own kitchen.",
+    "Name the Southwest Florida communities and seasonal, local ingredients.",
+    "Gently invite readers to reach out for a consultation or personal chef services, without being pushy.",
+  ].join("\n"),
+  donts: [
+    "Don't be preachy, clinical, or pushy.",
+    "Don't use hype or clickbait.",
+  ].join("\n"),
+};
+
+const TONE_FIELD_MAX = 1500;
+
+function clampToneField(value: unknown): string {
+  return String(value ?? "").trim().slice(0, TONE_FIELD_MAX);
+}
+
+/** Normalize an arbitrary object into a BlogTone with clamped fields. */
+export function normalizeTone(value: unknown): BlogTone {
+  const v = (typeof value === "object" && value !== null ? value : {}) as Record<
+    string,
+    unknown
+  >;
+  return {
+    voice: clampToneField(v.voice) || DEFAULT_TONE.voice,
+    audience: clampToneField(v.audience) || DEFAULT_TONE.audience,
+    style: clampToneField(v.style) || DEFAULT_TONE.style,
+    dos: clampToneField(v.dos) || DEFAULT_TONE.dos,
+    donts: clampToneField(v.donts) || DEFAULT_TONE.donts,
+  };
+}
+
+// Fixed honesty guardrail — lives in the system prompt (NOT in the editable
+// tone) so the tone editor can never delete it.
+const HONESTY_RULE = `Honesty rules (always apply, regardless of tone):
+- Write as Beth McCarthy for the Wellness Journal blog at floridahealthychef.com. Everything is a DRAFT for human review before publishing.
+- Never invent statistics, studies, research citations, or specific nutrition or medical claims and present them as fact. Keep wellness benefits general and experiential ("many people feel more energized"), not clinical promises.
+- Never fabricate client stories, quotes, or testimonials.`;
+
+function toneSystemPrompt(tone: BlogTone): string {
+  return [
+    "You are Beth McCarthy, Southwest Florida's Certified Natural Chef and personal healthy chef, writing for the Wellness Journal blog at floridahealthychef.com.",
+    "",
+    "Voice:",
+    tone.voice,
+    "",
+    "Audience:",
+    tone.audience,
+    "",
+    "Style:",
+    tone.style,
+    "",
+    "Do:",
+    tone.dos,
+    "",
+    "Don't:",
+    tone.donts,
+    "",
+    HONESTY_RULE,
+  ].join("\n");
+}
+
+const TITLES_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["titles"],
+  properties: {
+    titles: {
+      type: "array",
+      description:
+        "Blog article title ideas, each a distinct angle — engaging but never clickbait.",
+      items: { type: "string" },
+    },
+  },
+} as const;
+
+/**
+ * Generate `count` blog title ideas in the configured tone, optionally
+ * seeded by a topic. The JSON schema can't cap array length, so the caller
+ * clamps `count` and the result is sliced.
+ */
+export async function generateTitleIdeas(
+  tone: BlogTone,
+  count: number,
+  topic?: string,
+): Promise<string[]> {
+  const prompt = [
+    `Suggest ${count} blog article title idea${count === 1 ? "" : "s"} for the Wellness Journal.`,
+    topic && topic.trim()
+      ? `Focus them on this topic or theme: ${topic.trim()}`
+      : "Range across your usual subjects — seasonal Southwest Florida ingredients, healthy eating, food as medicine, and personal chef life.",
+    "Each title should be a genuinely different angle, enticing but honest (no clickbait, no invented claims).",
+  ].join("\n");
+
+  const client = new Anthropic(); // reads ANTHROPIC_API_KEY
+
+  let response: Anthropic.Message;
+  try {
+    response = await client.messages.create({
+      model: "claude-opus-4-8",
+      max_tokens: 16000,
+      thinking: { type: "adaptive" },
+      system: toneSystemPrompt(tone),
+      messages: [{ role: "user", content: prompt }],
+      output_config: {
+        format: { type: "json_schema", schema: TITLES_SCHEMA },
+      },
+    });
+  } catch (error) {
+    if (error instanceof Anthropic.AuthenticationError) {
+      throw new ClaudeGenerationError("Invalid API key", 401);
+    }
+    if (error instanceof Anthropic.APIError) {
+      throw new ClaudeGenerationError(
+        `Claude API error (${error.status ?? "unknown"}): ${error.message}`,
+        502,
+      );
+    }
+    throw error;
+  }
+
+  const textBlock = response.content.find(
+    (block): block is Anthropic.TextBlock => block.type === "text",
+  );
+  if (!textBlock) {
+    throw new ClaudeGenerationError("Claude returned no titles.");
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(textBlock.text);
+  } catch {
+    throw new ClaudeGenerationError("Claude returned invalid JSON.");
+  }
+
+  const titles = (parsed as { titles?: unknown }).titles;
+  if (!Array.isArray(titles) || !titles.every((t) => typeof t === "string")) {
+    throw new ClaudeGenerationError(
+      "Claude's response did not match the expected titles format.",
+    );
+  }
+  return titles.map((t) => t.trim()).filter(Boolean).slice(0, count);
+}
+
+/**
+ * Write a full article draft from a chosen title, in the configured tone.
+ * Mirrors `generateArticle`: returns excerpt, category, body (and an
+ * imageIndex when gallery choices are supplied).
+ */
+export async function writeFullPost(
+  tone: BlogTone,
+  title: string,
+  imageChoices?: ImageChoice[],
+): Promise<GeneratedArticle> {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const article = await writeFullPostOnce(tone, title, imageChoices);
+    if (article.body.length > 0) return article;
+  }
+  throw new ClaudeGenerationError(
+    "Claude returned an article with no body text — please try again.",
+  );
+}
+
+async function writeFullPostOnce(
+  tone: BlogTone,
+  title: string,
+  imageChoices?: ImageChoice[],
+): Promise<GeneratedArticle> {
+  const prompt = [
+    `Write a complete, well-structured blog article of roughly 400-500 words with this title: "${title}"`,
+    "Organize it with clear h2 section headings, flowing paragraphs, and bulleted lists where they aid readability.",
+    "The excerpt should be an enticing 1-2 sentence teaser for the blog listing page.",
+    ...(imageChoices && imageChoices.length > 0
+      ? [
+          "Choose a hero image from these photos (pick the one whose subject best matches the article; return its number as imageIndex):",
+          ...imageChoices.map((c) => `${c.index}: ${c.caption}`),
+        ]
+      : []),
+    "Return the excerpt, category, and article body.",
+  ].join("\n");
+
+  const client = new Anthropic(); // reads ANTHROPIC_API_KEY
+
+  let response: Anthropic.Message;
+  try {
+    response = await client.messages.create({
+      model: "claude-opus-4-8",
+      max_tokens: 16000,
+      thinking: { type: "adaptive" },
+      system: toneSystemPrompt(tone),
+      messages: [{ role: "user", content: prompt }],
+      output_config: {
+        format: {
+          type: "json_schema",
+          schema: imageChoices?.length
+            ? {
+                ...ARTICLE_SCHEMA,
+                required: [...ARTICLE_SCHEMA.required, "imageIndex"],
+                properties: {
+                  ...ARTICLE_SCHEMA.properties,
+                  imageIndex: {
+                    type: "integer",
+                    description:
+                      "The number of the photo (from the provided list) that best fits this article.",
+                  },
+                },
+              }
+            : ARTICLE_SCHEMA,
+        },
+      },
+    });
+  } catch (error) {
+    if (error instanceof Anthropic.AuthenticationError) {
+      throw new ClaudeGenerationError("Invalid API key", 401);
+    }
+    if (error instanceof Anthropic.APIError) {
+      throw new ClaudeGenerationError(
+        `Claude API error (${error.status ?? "unknown"}): ${error.message}`,
+        502,
+      );
+    }
+    throw error;
+  }
+
+  const textBlock = response.content.find(
+    (block): block is Anthropic.TextBlock => block.type === "text",
+  );
+  if (!textBlock) {
+    throw new ClaudeGenerationError("Claude returned no article text.");
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(textBlock.text);
+  } catch {
+    throw new ClaudeGenerationError("Claude returned invalid JSON.");
+  }
+
+  const article = parsed as Partial<GeneratedArticle>;
+  if (
+    typeof article.excerpt !== "string" ||
+    typeof article.category !== "string" ||
+    !Array.isArray(article.body) ||
+    !article.body.every(isValidBlock)
+  ) {
+    throw new ClaudeGenerationError(
+      "Claude's response did not match the expected article format.",
+    );
+  }
+
+  return {
+    excerpt: article.excerpt,
+    category: article.category,
+    body: article.body,
+    imageIndex:
+      typeof (article as { imageIndex?: unknown }).imageIndex === "number"
+        ? ((article as { imageIndex?: number }).imageIndex as number)
+        : undefined,
+  };
+}

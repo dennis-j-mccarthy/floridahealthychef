@@ -58,3 +58,30 @@ model ContactMessage {
   message   String
   createdAt DateTime @default(now())
 }
+
+model MetaConnection {
+  id             String    @id @default("default") // singleton row
+  fbUserId       String?
+  fbUserName     String?
+  fbUserToken    String? // long-lived user access token
+  pageId         String?
+  pageName       String?
+  pageToken      String? // long-lived Page access token (used to publish)
+  igUserId       String? // linked Instagram Business account id, when present
+  igUsername     String?
+  adAccountId    String? // e.g. "act_1788471615529613"
+  scopes         String? // comma-separated granted permissions
+  tokenExpiresAt DateTime?
+  connectedAt    DateTime?
+  updatedAt      DateTime  @updatedAt
+}
+
+model BlogSettings {
+  id        String   @id @default("default") // singleton row
+  voice     String   @default("")
+  audience  String   @default("")
+  style     String   @default("")
+  dos       String   @default("") // one guideline per line
+  donts     String   @default("") // one guideline per line
+  updatedAt DateTime @updatedAt
+}
