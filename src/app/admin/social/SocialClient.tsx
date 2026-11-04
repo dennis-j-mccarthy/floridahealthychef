@@ -251,7 +251,7 @@ export default function SocialClient(props: Props) {
       </div>
 
       {/* Composer */}
-      <div className={`rounded-2xl bg-white p-6 shadow-sm sm:p-8 ${connected ? "" : "opacity-60"}`}>
+      <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8">
         <span className="text-xs font-medium uppercase tracking-[0.14em] text-gray">
           New post
         </span>
@@ -266,7 +266,7 @@ export default function SocialClient(props: Props) {
             placeholder="Write the caption…"
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
-            disabled={!connected || busy}
+            disabled={busy}
           />
         </div>
 
@@ -280,7 +280,7 @@ export default function SocialClient(props: Props) {
             placeholder="https://floridahealthychef.com/images/…jpg"
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
-            disabled={!connected || busy}
+            disabled={busy}
           />
           {props.photos.length > 0 && (
             <div className="mt-3">
@@ -293,7 +293,7 @@ export default function SocialClient(props: Props) {
                     key={p.url}
                     type="button"
                     onClick={() => setImageUrl(imageUrl === p.url ? "" : p.url)}
-                    disabled={!connected || busy}
+                    disabled={busy}
                     title={p.caption}
                     className={`relative overflow-hidden rounded-xl border-2 transition ${
                       imageUrl === p.url
@@ -352,13 +352,13 @@ export default function SocialClient(props: Props) {
               onChange={(e) => setNudge(e.target.value)}
               placeholder="What's this post about? (optional nudge)"
               aria-label="Caption nudge"
-              disabled={!connected || busy || generating}
+              disabled={busy || generating}
               className="w-full max-w-sm rounded-lg border border-light-2 bg-white px-3 py-2 text-sm font-light text-dark placeholder-gray/50 focus:border-primary focus:outline-none"
             />
             <button
               type="button"
               onClick={generateCaptions}
-              disabled={!connected || busy || generating}
+              disabled={busy || generating}
               className="rounded-lg bg-olive px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-olive-dark disabled:opacity-50"
             >
               {generating ? "Writing…" : "Generate 3 captions"}

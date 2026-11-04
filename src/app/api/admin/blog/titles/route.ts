@@ -32,13 +32,14 @@ export async function POST(request: Request) {
   // Use the tone from the request (so unsaved edits apply); fall back to the stored tone.
   const tone = data.tone !== undefined ? normalizeTone(data.tone) : await getTone();
   const topic = typeof data.topic === "string" ? data.topic : undefined;
+  const pillarId = typeof data.pillarId === "string" ? data.pillarId : null;
   const rawCount = Number(data.count);
   const count = Number.isFinite(rawCount)
     ? Math.min(MAX_COUNT, Math.max(MIN_COUNT, Math.floor(rawCount)))
     : 5;
 
   try {
-    const titles = await generateTitleIdeas(tone, count, topic, await essenceSystemBlock());
+    const titles = await generateTitleIdeas(tone, count, topic, await essenceSystemBlock(pillarId));
     return NextResponse.json({ ok: true, titles });
   } catch (error) {
     if (error instanceof ClaudeGenerationError) {

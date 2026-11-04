@@ -49,6 +49,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "A title is required." }, { status: 400 });
   }
   const tone = data.tone !== undefined ? normalizeTone(data.tone) : await getTone();
+  const pillarId = typeof data.pillarId === "string" ? data.pillarId : null;
 
   try {
     // Let Claude pick the best-fit hero from the captioned gallery.
@@ -69,7 +70,7 @@ export async function POST(request: Request) {
       galleryChoices.length
         ? galleryChoices.map(({ index, caption }) => ({ index, caption }))
         : undefined,
-      await essenceSystemBlock(),
+      await essenceSystemBlock(pillarId),
     );
 
     const pickedSrc =
@@ -86,6 +87,7 @@ export async function POST(request: Request) {
         excerpt: article.excerpt,
         image: pickedSrc ?? DEFAULT_IMAGE,
         body: JSON.stringify(article.body),
+        pillarId: pillarId ?? undefined,
         published: false, // draft — review before publishing
       },
     });

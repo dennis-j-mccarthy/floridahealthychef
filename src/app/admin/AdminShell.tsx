@@ -41,21 +41,19 @@ function buildNav(counts: NavCounts): Group[] {
   return [
     { label: "Strategy", nodes: [{ href: "/admin/essence", label: "Essence" }] },
     {
-      label: "Content",
-      nodes: [
-        { href: "/admin/blog", label: "Blog manager", chip: counts.posts != null ? String(counts.posts) : null },
-        { href: "/admin/blog/ideas", label: "Ideas" },
-        { href: "/admin/blog/generate", label: "Generate" },
-        { href: "/admin/blog/promo", label: "Promo" },
-      ],
-    },
-    {
       label: "Creative",
       nodes: [
         { href: "/admin/gallery", label: "Gallery", chip: counts.gallery != null ? String(counts.gallery) : null },
       ],
     },
-    { label: "Channels", nodes: [{ href: "/admin/social", label: "Social" }] },
+    {
+      label: "Content",
+      nodes: [
+        { href: "/admin/blog", label: "Blog", chip: counts.posts != null ? String(counts.posts) : null },
+        { href: "/admin/blog/generate", label: "Generate" },
+      ],
+    },
+    { label: "Channels", nodes: [{ href: "/admin/social", label: "Post maker" }] },
     {
       label: "Tools",
       nodes: [
