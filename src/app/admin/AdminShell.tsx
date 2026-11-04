@@ -39,6 +39,7 @@ type Group = { label: string; nodes: Node[] };
 
 function buildNav(counts: NavCounts): Group[] {
   return [
+    { label: "Strategy", nodes: [{ href: "/admin/essence", label: "Essence" }] },
     {
       label: "Content",
       nodes: [

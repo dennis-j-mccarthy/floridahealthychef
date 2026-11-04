@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isAdminRequest } from "@/lib/adminAuth";
 import { ClaudeGenerationError, generateTitleIdeas, normalizeTone } from "@/lib/claude";
 import { getTone } from "@/lib/blogSettings";
+import { essenceSystemBlock } from "@/lib/brandContext";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300;
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
     : 5;
 
   try {
-    const titles = await generateTitleIdeas(tone, count, topic);
+    const titles = await generateTitleIdeas(tone, count, topic, await essenceSystemBlock());
     return NextResponse.json({ ok: true, titles });
   } catch (error) {
     if (error instanceof ClaudeGenerationError) {

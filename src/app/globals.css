@@ -18,6 +18,24 @@
   --color-sage: #939d3c;
   --color-mint: #f4faf6;
   --color-forest: #156950;
+  /* Throughline component tokens (ported admin components use these).
+     Mapped onto Beth's palette: accent = forest green. */
+  --color-paper: #ffffff;
+  --color-surface: #f9fafb;
+  --color-subtle: #f3f4f6;
+  --color-line: #e5e7eb;
+  --color-ink: #1a1a2e;
+  --color-muted: #6b7280;
+  --color-accent: #156950;
+  --color-accent-strong: #0f4e3b;
+  --color-accent-soft: #e3f0ea;
+  --color-accent-ink: #ffffff;
+  --color-sea: #0e9488;
+  --color-sea-soft: #d7f1ed;
+  --color-sun: #d97706;
+  --color-sun-soft: #fdeed6;
+  --color-berry: #db2777;
+  --color-berry-soft: #fce4ef;
 }
 
 html {

@@ -3,6 +3,7 @@ import { isAdminRequest } from "@/lib/adminAuth";
 import { prisma } from "@/lib/db";
 import { ClaudeGenerationError, normalizeTone, writeFullPost } from "@/lib/claude";
 import { getTone } from "@/lib/blogSettings";
+import { essenceSystemBlock } from "@/lib/brandContext";
 import { slugify } from "@/app/admin/blog/blocks";
 
 export const dynamic = "force-dynamic";
@@ -68,6 +69,7 @@ export async function POST(request: Request) {
       galleryChoices.length
         ? galleryChoices.map(({ index, caption }) => ({ index, caption }))
         : undefined,
+      await essenceSystemBlock(),
     );
 
     const pickedSrc =

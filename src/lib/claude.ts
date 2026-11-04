@@ -935,7 +935,7 @@ const HONESTY_RULE = `Honesty rules (always apply, regardless of tone):
 - Never invent statistics, studies, research citations, or specific nutrition or medical claims and present them as fact. Keep wellness benefits general and experiential ("many people feel more energized"), not clinical promises.
 - Never fabricate client stories, quotes, or testimonials.`;
 
-function toneSystemPrompt(tone: BlogTone): string {
+function toneSystemPrompt(tone: BlogTone, brandBrief = ""): string {
   return [
     "You are Beth McCarthy, Southwest Florida's Certified Natural Chef and personal healthy chef, writing for the Wellness Journal blog at floridahealthychef.com.",
     "",
@@ -955,6 +955,7 @@ function toneSystemPrompt(tone: BlogTone): string {
     tone.donts,
     "",
     HONESTY_RULE,
+    ...(brandBrief ? ["", brandBrief] : []),
   ].join("\n");
 }
 
@@ -981,6 +982,7 @@ export async function generateTitleIdeas(
   tone: BlogTone,
   count: number,
   topic?: string,
+  brandBrief?: string,
 ): Promise<string[]> {
   const prompt = [
     `Suggest ${count} blog article title idea${count === 1 ? "" : "s"} for the Wellness Journal.`,
@@ -998,7 +1000,7 @@ export async function generateTitleIdeas(
       model: "claude-opus-4-8",
       max_tokens: 16000,
       thinking: { type: "adaptive" },
-      system: toneSystemPrompt(tone),
+      system: toneSystemPrompt(tone, brandBrief),
       messages: [{ role: "user", content: prompt }],
       output_config: {
         format: { type: "json_schema", schema: TITLES_SCHEMA },
@@ -1049,9 +1051,10 @@ export async function writeFullPost(
   tone: BlogTone,
   title: string,
   imageChoices?: ImageChoice[],
+  brandBrief?: string,
 ): Promise<GeneratedArticle> {
   for (let attempt = 0; attempt < 2; attempt++) {
-    const article = await writeFullPostOnce(tone, title, imageChoices);
+    const article = await writeFullPostOnce(tone, title, imageChoices, brandBrief);
     if (article.body.length > 0) return article;
   }
   throw new ClaudeGenerationError(
@@ -1063,6 +1066,7 @@ async function writeFullPostOnce(
   tone: BlogTone,
   title: string,
   imageChoices?: ImageChoice[],
+  brandBrief?: string,
 ): Promise<GeneratedArticle> {
   const prompt = [
     `Write a complete, well-structured blog article of roughly 400-500 words with this title: "${title}"`,
@@ -1085,7 +1089,7 @@ async function writeFullPostOnce(
       model: "claude-opus-4-8",
       max_tokens: 16000,
       thinking: { type: "adaptive" },
-      system: toneSystemPrompt(tone),
+      system: toneSystemPrompt(tone, brandBrief),
       messages: [{ role: "user", content: prompt }],
       output_config: {
         format: {
