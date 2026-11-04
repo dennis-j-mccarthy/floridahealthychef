@@ -163,23 +163,20 @@ export default function SocialClient(props: Props) {
     }
   }
 
-  if (!props.configured) {
-    return (
-      <div className="mt-8 rounded-2xl border border-amber-300 bg-amber-50 p-6 text-sm text-amber-900">
-        <strong className="font-semibold">Meta app not set up yet.</strong>
-        <p className="mt-2 leading-relaxed">
-          Add <code>META_APP_ID</code> and <code>META_APP_SECRET</code> from your
-          Meta app (developers.facebook.com) to the environment, then reload. See{" "}
-          <code>docs/META_SETUP.md</code> for the step-by-step.
-        </p>
-      </div>
-    );
-  }
-
   const canInstagram = props.instagramEnabled;
 
   return (
     <div className="mt-8 space-y-4">
+      {!props.configured && (
+        <div className="rounded-2xl border border-amber-300 bg-amber-50 p-5 text-sm text-amber-900">
+          <strong className="font-semibold">Build posts now — connect Meta to publish them.</strong>
+          <p className="mt-1 leading-relaxed">
+            You can pick a photo, choose a pillar and generate captions without a connection. To
+            publish or schedule to Facebook &amp; Instagram, add <code>META_APP_ID</code> and{" "}
+            <code>META_APP_SECRET</code> (see <code>docs/META_SETUP.md</code>) and reload.
+          </p>
+        </div>
+      )}
       {notice && (
         <div
           className={`rounded-xl px-4 py-3 text-sm ${
