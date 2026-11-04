@@ -152,7 +152,7 @@ export default function AdminShell({ children, counts }: { children: ReactNode; 
           <div className="tl-brand">
             <Link href="/admin" className="tl-brand__btn" aria-label="Admin home">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/images/footer-logo.svg" alt="" width={38} height={38} className="tl-mark" />
+              <img src="/images/logo.png" alt="" width={38} height={38} className="tl-mark" />
               <span style={{ minWidth: 0 }}>
                 <span className="tl-brand__name">Florida Healthy Chef</span>
                 <span className="tl-brand__ind">Beautiful Foods by Beth · floridahealthychef.com</span>
