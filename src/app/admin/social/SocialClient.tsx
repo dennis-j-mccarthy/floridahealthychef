@@ -53,6 +53,12 @@ export default function SocialClient(props: Props) {
   const [scheduledAt, setScheduledAt] = useState("");
   const [toFacebook, setToFacebook] = useState(true);
   const [toInstagram, setToInstagram] = useState(false);
+  // the maker: pillar + generated caption options
+  const [pillars, setPillars] = useState<{ id: string; name: string; message: string }[]>([]);
+  const [pillarId, setPillarId] = useState<string | null>(null);
+  const [nudge, setNudge] = useState("");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [generating, setGenerating] = useState(false);
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<
     | { ok: boolean; results: PostResponse["results"] }
@@ -81,6 +87,44 @@ export default function SocialClient(props: Props) {
   }, []);
 
   const isEnv = props.source === "env";
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/admin/pillars")
+      .then((r) => (r.ok ? r.json() : { pillars: [] }))
+      .then((d) => {
+        if (!cancelled) setPillars(d.pillars || []);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function generateCaptions() {
+    setGenerating(true);
+    setSuggestions([]);
+    try {
+      const chosen = props.photos.find((p) => p.url === imageUrl);
+      const res = await fetch("/api/admin/social/captions", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          imageCaption: chosen?.caption || "",
+          pillarId,
+          nudge,
+          instagram: toInstagram,
+        }),
+      });
+      const d = await res.json();
+      if (!res.ok || !d.ok) throw new Error(d.error || "Generation failed.");
+      setSuggestions(d.captions || []);
+    } catch (e) {
+      setNotice({ kind: "err", text: (e as Error).message });
+    } finally {
+      setGenerating(false);
+    }
+  }
 
   async function disconnect() {
     await fetch("/api/admin/meta/disconnect", { method: "POST" });
@@ -243,15 +287,15 @@ export default function SocialClient(props: Props) {
               <p className="text-xs font-light text-gray">
                 …or pick one from the gallery:
               </p>
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
                 {props.photos.map((p) => (
                   <button
                     key={p.url}
                     type="button"
-                    onClick={() => setImageUrl(p.url)}
+                    onClick={() => setImageUrl(imageUrl === p.url ? "" : p.url)}
                     disabled={!connected || busy}
                     title={p.caption}
-                    className={`overflow-hidden rounded-lg border transition ${
+                    className={`relative overflow-hidden rounded-xl border-2 transition ${
                       imageUrl === p.url
                         ? "border-primary ring-2 ring-primary/40"
                         : "border-light-2 hover:border-sage"
@@ -261,11 +305,81 @@ export default function SocialClient(props: Props) {
                     <img
                       src={p.url}
                       alt={p.caption}
-                      className="h-16 w-16 object-cover"
+                      className="aspect-square w-full object-cover"
                     />
+                    {imageUrl === p.url && (
+                      <span className="absolute right-1.5 top-1.5 grid h-6 w-6 place-items-center rounded-full bg-primary text-xs font-bold text-white">
+                        ✓
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
+            </div>
+          )}
+        </div>
+
+        {/* Pillar */}
+        {pillars.length > 0 && (
+          <div className="mt-4">
+            <span className={labelClass}>Pillar — the brand message this post carries</span>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {pillars.map((pl) => (
+                <button
+                  key={pl.id}
+                  type="button"
+                  onClick={() => setPillarId(pillarId === pl.id ? null : pl.id)}
+                  disabled={busy}
+                  title={pl.message}
+                  className={`rounded-full border-2 px-3 py-1 text-xs font-bold transition ${
+                    pillarId === pl.id
+                      ? "border-primary bg-primary/10 text-primary-dark"
+                      : "border-light-2 text-dark hover:border-sage"
+                  }`}
+                >
+                  {pl.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Caption options */}
+        <div className="mt-4 rounded-xl border border-light-2 bg-light p-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <input
+              value={nudge}
+              onChange={(e) => setNudge(e.target.value)}
+              placeholder="What's this post about? (optional nudge)"
+              aria-label="Caption nudge"
+              disabled={!connected || busy || generating}
+              className="w-full max-w-sm rounded-lg border border-light-2 bg-white px-3 py-2 text-sm font-light text-dark placeholder-gray/50 focus:border-primary focus:outline-none"
+            />
+            <button
+              type="button"
+              onClick={generateCaptions}
+              disabled={!connected || busy || generating}
+              className="rounded-lg bg-olive px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-olive-dark disabled:opacity-50"
+            >
+              {generating ? "Writing…" : "Generate 3 captions"}
+            </button>
+          </div>
+          {suggestions.length > 0 && (
+            <div className="mt-3 grid gap-2 lg:grid-cols-3">
+              {suggestions.map((c, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setCaption(c)}
+                  className={`rounded-lg border p-3 text-left text-xs font-light leading-snug transition ${
+                    caption === c
+                      ? "border-primary bg-white ring-2 ring-primary/30"
+                      : "border-light-2 bg-white hover:border-sage"
+                  }`}
+                >
+                  <span className="line-clamp-6 whitespace-pre-line">{c}</span>
+                </button>
+              ))}
             </div>
           )}
         </div>
