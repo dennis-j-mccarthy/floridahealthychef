@@ -35,9 +35,25 @@ function readAttr(): Record<string, string> {
 export function trackConversion(kind: ConversionKind): void {
   try {
     if (location.pathname.startsWith("/admin")) return;
-    const payload = JSON.stringify({ kind, path: location.pathname, ...readAttr() });
-    const sent = navigator.sendBeacon?.("/api/track", new Blob([payload], { type: "application/json" }));
-    if (!sent) void fetch("/api/track", { method: "POST", headers: { "content-type": "application/json" }, body: payload, keepalive: true }).catch(() => {});
+  } catch {
+    return;
+  }
+  const payload = JSON.stringify({ kind, path: location.pathname, ...readAttr() });
+  // text/plain keeps the beacon a "simple" request; /api/track parses req.text().
+  let sent = false;
+  try {
+    sent = !!navigator.sendBeacon?.("/api/track", new Blob([payload], { type: "text/plain" }));
+  } catch {
+    sent = false;
+  }
+  if (!sent) {
+    try {
+      void fetch("/api/track", { method: "POST", headers: { "content-type": "text/plain" }, body: payload, keepalive: true }).catch(() => {});
+    } catch {
+      /* never block the visitor */
+    }
+  }
+  try {
     const label = LABELS[kind];
     if (ADS_ID && label && window.gtag) window.gtag("event", "conversion", { send_to: `${ADS_ID}/${label}` });
   } catch {

@@ -80,7 +80,7 @@ const ROLE =
   "intimate catering for up to 20 guests (paleo, gluten-free and more), and speaking and tasting events. The first step is always a complimentary 20-minute consultation, booked through the contact page.";
 
 const HONESTY =
-  "Honesty rules: never invent clients, stories, testimonials, reviews, awards, numbers of clients, prices other than the range above, dates or claims. " +
+  "Honesty rules: never invent clients, stories, testimonials, reviews, awards, numbers of clients, prices other than the range above, dates or claims, and never name specific farms, growers, markets, suppliers or travel limits. " +
   "Never promise a health outcome (no weight loss, blood pressure, medication, cure or disease claims; Google Ads rejects them). Describe food, ingredients, convenience and how it feels to be cared for. " +
   "Warm, personal, first person. No diet-culture language.";
 

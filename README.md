@@ -49,4 +49,17 @@ Ported from the Fluid Pathways studio and adapted to Beautiful Foods by Beth. In
 
 **Migration `20261109120000_growth_search`.** It adds `Keyword`, `LandingPage`, `ConversionEvent`, `SpendEntry` and `StudioSetting`, and seeds the keywords with `ON CONFLICT DO NOTHING`. As of 11/09 it is **not applied anywhere**. Until it is, the Growth pages show a "tables not created yet" notice, the admin APIs answer 503, `/api/track` ignores events and `/for/*` returns 404. The build (`prisma generate && next build`) never runs migrations. Apply it by hand with `npx prisma migrate deploy`. Run `npx prisma migrate status` first: `Pillar`, `BrandEssence` and `BlogPost.pillarId` are in the schema but have no migration folder.
 
+**Before you apply the migration.** The Prisma CLI reads `.env`, not `.env.local`, so export `DATABASE_URL` and `DATABASE_URL_UNPOOLED` (the `directUrl`) first. Run `npx prisma migrate status` before `npx prisma migrate deploy`. If it reports no migration history, the existing tables were created with `db push`, and `deploy` would replay `init` and fail. In that case, baseline the four older folders first with `npx prisma migrate resolve --applied <folder>`. If `Pillar` and `BrandEssence` are missing from production, they need their own migration.
+
+**Verified on 11/09.** All five migration files were applied in order to a throwaway local Postgres, which was destroyed afterwards. On that database:
+- The 19 keywords seeded.
+- Keyword add, duplicate (409), change and delete all worked.
+- The competitor list setting saved and read back.
+- A spend entry saved, and the tracked events showed up in the Paid tab.
+- One landing draft was written by the real AI route. It returned 404 to a visitor, and an admin saw it with the banner and noindex.
+- After publishing on that database, the page returned 200 with WebPage and FAQPage data and appeared in the sitemap.
+- A headless browser rendered the page and logged a click through to /contact.
+
+The `LandingClient` editing screen was checked as server-rendered HTML only and was not clicked through.
+
 **Env vars** (same names as Fluid Pathways, all optional): `GSC_SERVICE_ACCOUNT_JSON` and `GSC_SITE_URL` (`sc-domain:floridahealthychef.com`); `GOOGLE_ADS_DEVELOPER_TOKEN`, `GOOGLE_ADS_CLIENT_ID`, `GOOGLE_ADS_CLIENT_SECRET`, `GOOGLE_ADS_REFRESH_TOKEN` and `GOOGLE_ADS_CUSTOMER_ID` (optional `GOOGLE_ADS_LOGIN_CUSTOMER_ID`, `GOOGLE_ADS_API_VERSION`, `GOOGLE_ADS_GEO_TARGET`); `NEXT_PUBLIC_GOOGLE_ADS_ID` plus `NEXT_PUBLIC_GOOGLE_ADS_BOOKING_LABEL` (used for contact form sends) and `NEXT_PUBLIC_GOOGLE_ADS_CALL_LABEL`.
