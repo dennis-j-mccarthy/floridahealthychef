@@ -8,8 +8,9 @@ import { SITE_URL } from "@/lib/seo";
 
   The checks fetch THIS deployment (the origin the studio is open on), not
   SITE_URL: floridahealthychef.com still serves the old Webflow site. A page
-  that cannot be fetched (for example a protected Vercel preview answering
-  401) is reported as "couldn't check", never as missing.
+  that cannot be fetched is reported as "couldn't check", never as missing.
+  That includes a protected Vercel preview: it redirects to Vercel's login
+  page, which a plain fetch follows and reads as an empty sitemap.
 
   The Rich Results Test has no public API, so each page gets a link to run
   it by hand. Items that need a human are manual ticks stored in
@@ -60,10 +61,24 @@ function typesIn(html: string): string[] {
   return out;
 }
 
+const PROTECTED =
+  "Couldn't check: this preview is behind Vercel's login. Open the studio on floridahealthychef.vercel.app to check.";
+
 export async function runOrganicChecks(origin: string): Promise<{ site: SiteCheck[]; pages: PageCheck[]; landing: number; origin: string }> {
+  // redirect: "manual" so a protected preview shows up as a redirect (or 401)
+  // instead of silently becoming Vercel's login page.
   const get = async (path: string) => {
-    const res = await fetch(origin + path, { cache: "no-store", headers: { "user-agent": "FloridaHealthyChefStudioCheck/1.0" } });
-    return { status: res.status, text: await res.text() };
+    const res = await fetch(origin + path, {
+      cache: "no-store",
+      redirect: "manual",
+      headers: { "user-agent": "FloridaHealthyChefStudioCheck/1.0" },
+    });
+    const text = res.status === 200 ? await res.text() : "";
+    const isProtected =
+      res.status === 401 ||
+      (res.status >= 300 && res.status < 400 && /vercel\.com\/(login|sso)|_vercel_sso/.test(res.headers.get("location") ?? "")) ||
+      /Vercel Authentication/.test(text.slice(0, 4000));
+    return { status: isProtected ? 401 : res.status, text: isProtected ? "" : text, isProtected };
   };
   const site: SiteCheck[] = [];
 
@@ -73,7 +88,7 @@ export async function runOrganicChecks(origin: string): Promise<{ site: SiteChec
     site.push(
       sm.status === 200
         ? { id: "sitemap", label: "Sitemap is published", ok: count > 0, detail: `/sitemap.xml lists ${count} pages.` }
-        : { id: "sitemap", label: "Sitemap is published", ok: null, detail: `Couldn't check: the site answered ${sm.status}.` },
+        : { id: "sitemap", label: "Sitemap is published", ok: null, detail: sm.isProtected ? PROTECTED : `Couldn't check: the site answered ${sm.status}.` },
     );
   } catch {
     site.push({ id: "sitemap", label: "Sitemap is published", ok: null, detail: "Couldn't check: the sitemap could not be fetched." });
@@ -83,7 +98,7 @@ export async function runOrganicChecks(origin: string): Promise<{ site: SiteChec
     site.push(
       rb.status === 200
         ? { id: "robots", label: "robots.txt points to the sitemap", ok: /sitemap:/i.test(rb.text), detail: "Admin pages are kept out of search; public pages are open." }
-        : { id: "robots", label: "robots.txt points to the sitemap", ok: null, detail: `Couldn't check: the site answered ${rb.status}.` },
+        : { id: "robots", label: "robots.txt points to the sitemap", ok: null, detail: rb.isProtected ? PROTECTED : `Couldn't check: the site answered ${rb.status}.` },
     );
   } catch {
     site.push({ id: "robots", label: "robots.txt points to the sitemap", ok: null, detail: "Couldn't check: robots.txt could not be fetched." });
@@ -112,9 +127,9 @@ export async function runOrganicChecks(origin: string): Promise<{ site: SiteChec
   const results: PageCheck[] = [];
   for (const p of pages) {
     try {
-      const { status, text } = await get(p.path);
+      const { status, text, isProtected } = await get(p.path);
       if (status !== 200) {
-        results.push({ path: p.path, checked: false, status, title: false, description: false, canonical: false, openGraph: false, schemaTypes: [], missingSchema: [] });
+        results.push({ path: p.path, checked: false, status, title: false, description: false, canonical: false, openGraph: false, schemaTypes: [], missingSchema: [], error: isProtected ? "behind Vercel's login" : undefined });
         continue;
       }
       const end = text.indexOf("</head>");

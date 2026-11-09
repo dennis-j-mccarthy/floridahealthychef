@@ -157,7 +157,7 @@ async function Organic() {
                 <tr key={p.path} className="border-t border-line align-top">
                   <td className="py-2 font-bold [overflow-wrap:anywhere]">
                     {p.path}
-                    {!p.checked && <span className="block text-xs font-normal text-muted">Couldn&rsquo;t check{p.status ? ` (answered ${p.status})` : ""}</span>}
+                    {!p.checked && <span className="block text-xs font-normal text-muted">Couldn&rsquo;t check{p.error ? `: ${p.error}` : p.status ? ` (answered ${p.status})` : ""}</span>}
                   </td>
                   {[p.title, p.description, p.canonical, p.openGraph].map((v, i) => (
                     <td key={i}>{cell(p.checked, v)}</td>
