@@ -14,9 +14,9 @@ const BULLET_PLACEHOLDERS = [
   "e.g. How a personal chef takes the work off your plate",
 ];
 
-export default function GenerateForm() {
+export default function GenerateForm({ initialTitle = "" }: { initialTitle?: string } = {}) {
   const router = useRouter();
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState(initialTitle);
   const [bullets, setBullets] = useState(["", "", "", ""]);
   const [preview, setPreview] = useState("");
   const [generating, setGenerating] = useState(false);

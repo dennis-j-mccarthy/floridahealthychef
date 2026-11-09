@@ -3,12 +3,14 @@ import { prisma } from "@/lib/db";
 import GalleryLightbox, {
   type GalleryImage,
 } from "@/components/GalleryLightbox";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Gallery",
   description:
     "A visual gallery of beautiful, healthy dishes crafted by Certified Natural Chef Beth McCarthy.",
-};
+  path: "/gallery",
+});
 
 // Always read fresh from the DB so new uploads appear instantly.
 export const dynamic = "force-dynamic";

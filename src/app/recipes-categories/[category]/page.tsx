@@ -7,6 +7,7 @@ import {
   type CategorySlug,
 } from "@/data/recipes";
 import RecipeCard from "../../recipes/RecipeCard";
+import { pageMetadata } from "@/lib/seo";
 
 export function generateStaticParams() {
   return recipeCategories.map((c) => ({ category: c.slug }));
@@ -20,10 +21,11 @@ export async function generateMetadata({
   const { category } = await params;
   const cat = recipeCategories.find((c) => c.slug === category);
   if (!cat) return { title: "Recipes" };
-  return {
+  return pageMetadata({
     title: `${cat.label} Recipes`,
     description: `Beautiful ${cat.label} foods by Beth — organic recipes crafted with the food-as-medicine philosophy at heart.`,
-  };
+    path: `/recipes-categories/${cat.slug}`,
+  });
 }
 
 export default async function RecipeCategoryPage({

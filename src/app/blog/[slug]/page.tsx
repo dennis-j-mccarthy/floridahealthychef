@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import type { BlogBlock } from "@/data/blog";
+import { pageMetadata } from "@/lib/seo";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -24,13 +25,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = await prisma.blogPost.findFirst({
     where: { slug, published: true },
-    select: { title: true, excerpt: true },
+    select: { title: true, excerpt: true, image: true, createdAt: true },
   });
   if (!post) return { title: "Blog" };
-  return {
+  return pageMetadata({
     title: post.title,
     description: post.excerpt,
-  };
+    path: `/blog/${slug}`,
+    type: "article",
+    publishedTime: post.createdAt.toISOString(),
+    ...(post.image ? { image: { url: post.image, alt: post.title } } : {}),
+  });
 }
 
 function Block({ block }: { block: BlogBlock }) {

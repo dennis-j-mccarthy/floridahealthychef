@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import ContactForm from "./ContactForm";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Contact",
   description:
     "Schedule a complimentary 20-minute consultation with Certified Natural Chef Beth McCarthy. Serving Naples, Bonita, Estero, Fort Myers, and Punta Gorda.",
-};
+  path: "/contact",
+});
 
 export default function ContactPage() {
   return (

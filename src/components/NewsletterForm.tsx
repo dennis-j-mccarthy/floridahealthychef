@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { trackConversion } from "@/lib/track";
 
 type NewsletterFormProps = {
   /** Classes for the <form> element (layout). */
@@ -42,6 +43,7 @@ export default function NewsletterForm({
       });
       const data = await res.json();
       if (res.ok && data.ok) {
+        trackConversion("signup");
         setStatus("success");
         setEmail("");
       } else {

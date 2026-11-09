@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { recipes } from "@/data/recipes";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "About Beth",
   description:
     "Meet Beth McCarthy, Southwest Florida's healthiest Personal Chef. As your Personal Chef and wellness partner, together, we'll create healthy new eating and lifestyle choices that nourish every aspect of your life.",
-};
+  path: "/about",
+});
 
 const certifications = [
   { name: "Certified Retreat Leader", image: "/images/about/retreat-logo.jpg", width: 117 },
