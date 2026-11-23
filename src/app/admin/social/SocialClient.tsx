@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import PostPreview from "./PostPreview";
 
 interface Photo {
   url: string;
@@ -428,6 +429,17 @@ export default function SocialClient(props: Props) {
             disabled={!connected || busy}
           />
         </div>
+
+        {/* Until Meta is connected the channel boxes are locked, so show both. */}
+        <PostPreview
+          caption={caption}
+          imageUrl={imageUrl.trim()}
+          pageName={props.page || "Beautiful Foods by Beth"}
+          igHandle={props.instagram || props.page || "Beautiful Foods by Beth"}
+          scheduledAt={scheduledAt}
+          showFacebook={!connected || toFacebook}
+          showInstagram={!connected || toInstagram}
+        />
 
         <div className="mt-6 flex flex-wrap gap-3">
           <button
