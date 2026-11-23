@@ -55,6 +55,13 @@ function buildNav(counts: NavCounts): Group[] {
     },
     { label: "Channels", nodes: [{ href: "/admin/social", label: "Post maker" }] },
     {
+      label: "Growth",
+      nodes: [
+        { href: "/admin/search", label: "Search" },
+        { href: "/admin/landing", label: "Landing pages" },
+      ],
+    },
+    {
       label: "Tools",
       nodes: [
         { href: "/admin", label: "Dashboard" },

@@ -4,6 +4,8 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import NewsletterPopup from "@/components/NewsletterPopup";
+import { ConversionTracker } from "@/components/ConversionTracker";
+import { DEFAULT_DESCRIPTION, DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from "@/lib/seo";
 
 const lato = Lato({
   variable: "--font-lato",
@@ -41,13 +43,24 @@ const outfit = Outfit({
   weight: ["400", "500", "600", "700"],
 });
 
+// metadataBase resolves every relative canonical, og:url and image URL
+// against the canonical origin (see src/lib/seo.ts for why it is the real
+// domain, not vercel.app). Pages set their own canonical via pageMetadata().
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Beautiful Foods by Beth | Southwest Florida's Healthiest Personal Chef",
     template: "%s | Beautiful Foods by Beth",
   },
-  description:
-    "Certified Natural Chef Beth McCarthy offers personal chef services, intimate catering, and wellness coaching in Naples, Bonita, Estero, Fort Myers, and Punta Gorda.",
+  description: DEFAULT_DESCRIPTION,
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    locale: "en_US",
+    description: DEFAULT_DESCRIPTION,
+    images: [DEFAULT_OG_IMAGE],
+  },
+  twitter: { card: "summary_large_image", images: [DEFAULT_OG_IMAGE.url] },
 };
 
 export default function RootLayout({
@@ -64,6 +77,7 @@ export default function RootLayout({
         <main>{children}</main>
         <Footer />
         <NewsletterPopup />
+        <ConversionTracker />
       </body>
     </html>
   );

@@ -133,3 +133,86 @@ model BrandEssence {
   tone         Json?
   updatedAt    DateTime @updatedAt
 }
+
+// ───────── GROWTH / SEARCH (migration 20261109120000_growth_search) ─────────
+
+/// Growth → Search → Keywords. Phrases Beth wants to be found for. `priority`
+/// (0–100) is our own judgement of value, not search volume; it sizes the
+/// word cloud until Search Console or Keyword Planner is connected.
+model Keyword {
+  id          String   @id
+  phrase      String   @unique
+  /// "problem" | "service" | "question"
+  kind        String   @default("service")
+  priority    Int      @default(50)
+  /// "idea" | "target" | "dropped"
+  status      String   @default("idea")
+  /// "seed" | "claude" | "manual"
+  source      String   @default("manual")
+  note        String?
+  /// Landing page built for this keyword, if any (LandingPage.slug)
+  landingSlug String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([kind, priority])
+}
+
+/// Growth → Landing pages. Public at /for/[slug] only when published.
+model LandingPage {
+  slug            String   @id
+  keyword         String
+  title           String
+  metaDescription String   @default("")
+  h1              String
+  intro           String   @default("")
+  /// Markdown body (## subheads, paragraphs, - lists)
+  body            String
+  /// [{ q, a }]
+  faq             Json?
+  heroImage       String?
+  heroAlt         String?
+  /// Complete-page sections (eyebrow, value prop, benefits, steps, CTA).
+  /// Null for text-only pages.
+  sections        Json?
+  published       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+/// First-party conversion log from the public site.
+model ConversionEvent {
+  id        String   @id @default(cuid())
+  /// "contact_click" | "contact_submit" | "signup" | "call_click"
+  kind      String
+  path      String?
+  source    String?
+  campaign  String?
+  gclid     String?
+  createdAt DateTime @default(now())
+
+  @@index([kind, createdAt])
+}
+
+/// Ad spend entered by hand until an ads API is connected.
+model SpendEntry {
+  id          String   @id @default(cuid())
+  /// "google" | "meta"
+  channel     String
+  /// First day of the period this spend covers
+  periodStart DateTime
+  amountCents Int
+  results     Int?
+  note        String?
+  createdAt   DateTime @default(now())
+
+  @@index([channel, periodStart])
+}
+
+/// Small key/value settings for the Growth pages (budget caps, competitor
+/// list, checklist ticks).
+model StudioSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}

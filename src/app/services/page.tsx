@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Services",
   description:
     "Explore services offered by Beth, including Personal Chef Services, catering and more!",
-};
+  path: "/services",
+});
 
 const scriptHeading =
   "font-[family-name:var(--font-great-vibes)] font-normal text-[#020202]";

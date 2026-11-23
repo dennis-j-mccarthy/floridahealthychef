@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getRecipe, getRelatedRecipes, recipes } from "@/data/recipes";
 import RecipeCard from "../RecipeCard";
+import { pageMetadata } from "@/lib/seo";
 
 export function generateStaticParams() {
   return recipes.map((recipe) => ({ slug: recipe.slug }));
@@ -17,12 +18,14 @@ export async function generateMetadata({
   const { slug } = await params;
   const recipe = getRecipe(slug);
   if (!recipe) return { title: "Recipe Not Found" };
-  return {
+  return pageMetadata({
     title: recipe.title,
     description:
       recipe.intro ??
       `${recipe.title} — a Beautiful Foods by Beth recipe crafted with organic ingredients.`,
-  };
+    path: `/recipes/${slug}`,
+    image: { url: recipe.image, alt: recipe.title },
+  });
 }
 
 export default async function RecipePage({

@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { products } from "@/data/products";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Store",
   description:
     "Shop Chef Beth McCarthy's downloadable recipe handbooks — organic, food-as-medicine recipes for every meal.",
-};
+  path: "/store",
+});
 
 export default function StorePage() {
   return (

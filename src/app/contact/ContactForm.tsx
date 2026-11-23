@@ -2,6 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { trackConversion } from "@/lib/track";
 
 const inputClass =
   "mt-2 w-full rounded-lg border border-light-2 bg-light px-4 py-3 text-sm font-light text-dark placeholder-gray/50 focus:border-primary focus:outline-none";
@@ -40,7 +41,9 @@ export default function ContactForm() {
         }),
       });
       const data = await res.json();
-      setStatus(res.ok && data.ok ? "success" : "error");
+      const ok = res.ok && data.ok;
+      if (ok) trackConversion("contact_submit");
+      setStatus(ok ? "success" : "error");
     } catch {
       setStatus("error");
     }

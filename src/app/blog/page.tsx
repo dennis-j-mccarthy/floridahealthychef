@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import BlogList from "./BlogList";
 import NewsletterForm from "@/components/NewsletterForm";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Blog",
   description:
     "Wellness tips, healthy recipes, and lifestyle inspiration from Certified Natural Chef Beth McCarthy.",
-};
+  path: "/blog",
+});
 
 export const dynamic = "force-dynamic";
 

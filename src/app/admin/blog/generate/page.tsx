@@ -11,8 +11,14 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function GenerateArticlePage() {
+export default async function GenerateArticlePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ title?: string }>;
+}) {
   if (!(await isAdminRequest())) redirect("/admin/login");
+  // ?title= prefills the title (Growth → Search → Keywords → "Write article").
+  const { title } = await searchParams;
 
   return (
     <section className="min-h-screen bg-light pt-44 pb-20">
@@ -30,7 +36,7 @@ export default async function GenerateArticlePage() {
           unpublished so you can review and edit before they go live.
         </p>
 
-        <GenerateForm />
+        <GenerateForm initialTitle={title?.slice(0, 200) ?? ""} />
       </div>
     </section>
   );
