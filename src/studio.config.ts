@@ -51,7 +51,7 @@ export const studio: StudioConfig = {
       fromPicture: {
         noun: "recipe",
         title: "The full recipe",
-        brief: "Write the complete recipe for the dish in the picture, as Beth, for a home cook in Southwest Florida. Start with two sentences on why she makes it and what it does for you. Then a '## Ingredients' section as a list with amounts, a '## Method' section as numbered steps, and a short '## Beth's notes' section on swaps, make-ahead and sourcing. Name only ingredients you can see or that the dish plainly needs; organic and seasonal where it is true to her. Serves 4 unless the picture says otherwise.",
+        brief: "Write the complete recipe for the dish in the picture as Beth McCarthy, a professional personal chef, in a chef's register: confident, precise, technique-forward. Never frame it as home life (no 'my Tuesday', no family negotiating, no 'the weeks when I'). Open with two sentences on why this dish earns a place on her client menus and what makes it work on the plate. Then a '## Ingredients' section as a list with exact amounts, a '## Method' section as numbered steps written the way a chef briefs a cook (oven temperatures, timings, doneness cues, resting), and a short '## Chef's notes' section on sourcing in Southwest Florida, organic where it matters, substitutions and make-ahead. Name only ingredients you can see or that the dish plainly needs. Serves 4 unless the picture says otherwise.",
         category: "Food Facts",
       },
       categories: [
