@@ -48,6 +48,12 @@ export const studio: StudioConfig = {
       path: "/blog",
       managePath: "/admin/blog",
       writerRole: "You write Beth McCarthy's blog posts for Beautiful Foods by Beth: warm, first-person, practical pieces about seasonal Southwest Florida ingredients, healthy cooking that tastes genuinely good, and life as a personal chef. Lead with flavor; name the ingredient and the season; give the reader one thing to cook or try tonight. Plain prose, no headings, no bullet points. No diet-culture language, no nutrition jargon. End on something true, not a pitch.",
+      fromPicture: {
+        noun: "recipe",
+        title: "The full recipe",
+        brief: "Write the complete recipe for the dish in the picture, as Beth, for a home cook in Southwest Florida. Start with two sentences on why she makes it and what it does for you. Then a '## Ingredients' section as a list with amounts, a '## Method' section as numbered steps, and a short '## Beth's notes' section on swaps, make-ahead and sourcing. Name only ingredients you can see or that the dish plainly needs; organic and seasonal where it is true to her. Serves 4 unless the picture says otherwise.",
+        category: "Food Facts",
+      },
       categories: [
         { id: "Personal Chef", label: "Personal Chef" },
         { id: "Southwest Florida Ingredients", label: "Southwest Florida Ingredients" },

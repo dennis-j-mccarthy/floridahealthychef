@@ -18,12 +18,33 @@ const DEFAULT_IMAGE = "/images/blog/whats-a-personal-chef.jpg";
 function blocksToParagraphs(body: string): string[] {
   try {
     const blocks = JSON.parse(body) as Block[];
-    return blocks.map((b) => (b.type === "ul" ? b.items.map((i) => `• ${i}`).join("\n") : b.text)).filter(Boolean);
+    return blocks.map((b) => (b.type === "ul" ? b.items.map((i) => `- ${i}`).join("\n") : b.type === "h2" ? `## ${b.text}` : b.text)).filter(Boolean);
   } catch {
     return body ? [body] : [];
   }
 }
-const paragraphsToBlocks = (ps: string[]): Block[] => ps.map((text) => ({ type: "p", text }));
+/* The studio writes plain paragraphs; "## x" is a subheading and lines that
+   start with "- " or "• " are list items (a recipe's ingredients). Round-trips
+   with blocksToParagraphs above. */
+function paragraphsToBlocks(ps: string[]): Block[] {
+  const out: Block[] = [];
+  for (const raw of ps) {
+    const text = raw.trim();
+    if (!text) continue;
+    if (/^##\s+/.test(text)) { out.push({ type: "h2", text: text.replace(/^##\s+/, "") }); continue; }
+    const lines = text.split(/\n/).map((l) => l.trim()).filter(Boolean);
+    if (lines.length && lines.every((l) => /^[-•]\s+/.test(l))) { out.push({ type: "ul", items: lines.map((l) => l.replace(/^[-•]\s+/, "")) }); continue; }
+    // mixed: paragraph lines and list lines in one chunk
+    let items: string[] = [];
+    const flush = () => { if (items.length) { out.push({ type: "ul", items }); items = []; } };
+    for (const l of lines) {
+      if (/^[-•]\s+/.test(l)) items.push(l.replace(/^[-•]\s+/, ""));
+      else { flush(); out.push({ type: "p", text: l }); }
+    }
+    flush();
+  }
+  return out;
+}
 const fmtDate = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
 const slugCache = new Map<string, string>();
