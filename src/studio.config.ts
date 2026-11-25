@@ -42,6 +42,7 @@ export const studio: StudioConfig = {
     tagline: BRAND_ESSENCE.line,
     logo: "/images/logo.png",
     accent: "#939d3c",
+    og: { font: "Josefin Sans", accent: "#f45b69", accent2: "#939d3c", ink: "#1a1a2e", paper: "#fbf7f2", wordmark: "text" },
     blog: {
       label: "Blog",
       singular: "post",
