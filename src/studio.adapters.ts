@@ -107,7 +107,14 @@ export const adapters: StudioAdapters = {
   },
   pictures: {
     mockupPattern: null,
-    absolute: (src) => absoluteUrl(src),
+    // Pictures must resolve on the host that actually serves this app. floridahealthychef.com
+    // is still the old WordPress site, so SITE_URL would 404 for /images/…; use the Vercel
+    // production host (or STUDIO_ORIGIN) for anything the model has to fetch.
+    absolute: (src) => {
+      if (/^https?:\/\//i.test(src)) return src;
+      const origin = process.env.STUDIO_ORIGIN || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : null);
+      return origin ? `${origin}${src.startsWith("/") ? "" : "/"}${src}` : absoluteUrl(src);
+    },
     normalize: (src) => src.trim(),
     async list() {
       const [gallery, uploads] = await Promise.all([
