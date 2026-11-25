@@ -12,7 +12,7 @@ import { ADS_ID, ATTR_KEY, trackConversion } from "@/lib/track";
 */
 export function ConversionTracker() {
   useEffect(() => {
-    if (location.pathname.startsWith("/admin")) return;
+    if (location.pathname.startsWith("/admin") || location.pathname.startsWith("/creator")) return;
     try {
       const q = new URLSearchParams(location.search);
       const gclid = q.get("gclid") || undefined;
@@ -39,7 +39,7 @@ export function ConversionTracker() {
     }
 
     function onClick(e: MouseEvent) {
-      if (location.pathname.startsWith("/admin")) return;
+      if (location.pathname.startsWith("/admin") || location.pathname.startsWith("/creator")) return;
       const a = (e.target as Element | null)?.closest?.("a");
       const href = a?.getAttribute("href") || "";
       if (href.startsWith("tel:")) trackConversion("call_click");

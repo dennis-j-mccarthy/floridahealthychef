@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import NewsletterPopup from "@/components/NewsletterPopup";
 import { ConversionTracker } from "@/components/ConversionTracker";
+import SiteChrome from "@/components/SiteChrome";
 import { DEFAULT_DESCRIPTION, DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from "@/lib/seo";
 
 const lato = Lato({
@@ -73,10 +74,9 @@ export default function RootLayout({
       <body
         className={`${lato.variable} ${dmSans.variable} ${greatVibes.variable} ${corinthia.variable} ${josefinSans.variable} ${outfit.variable} antialiased`}
       >
-        <Header />
+        <SiteChrome><Header /></SiteChrome>
         <main>{children}</main>
-        <Footer />
-        <NewsletterPopup />
+        <SiteChrome><Footer /><NewsletterPopup /></SiteChrome>
         <ConversionTracker />
       </body>
     </html>

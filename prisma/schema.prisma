@@ -85,6 +85,8 @@ model BlogSettings {
   style     String   @default("")
   dos       String   @default("") // one guideline per line
   donts     String   @default("") // one guideline per line
+  /// creator-studio: the tone brief as one JSON object (the shared tone-store reads this)
+  tone      Json?
   updatedAt DateTime @updatedAt
 }
 
@@ -131,6 +133,10 @@ model BrandEssence {
   voiceBold    Int      @default(50)
   /// BlogTone JSON (voice / audience / style / dos / donts)
   tone         Json?
+  /// creator-studio: call to action, core messages, audiences
+  cta          String   @default("")
+  messages     Json     @default("[]")
+  audiences    Json     @default("[]")
   updatedAt    DateTime @updatedAt
 }
 
@@ -215,4 +221,92 @@ model StudioSetting {
   key       String   @id
   value     Json
   updatedAt DateTime @updatedAt
+}
+
+// ───────── creator-studio shared models (synced from the creator-studio repo) ─────────
+// ───────── SOCIAL POST DRAFTS ─────────
+// Auto-generated from a published musing (one row per platform). Drafts for
+// review, not auto-posted — no platform API credentials are wired.
+model SocialDraft {
+  id        String   @id @default(cuid())
+  musingId  String // a musing id, or "post:<id>" for standalone Creator-page posts
+  platform  String // "instagram" | "facebook" | "pinterest" | "reel" | "email"
+  caption   String
+  hashtags  String?
+  link      String
+  image     String?
+  status    String   @default("draft") // draft | approved | posted | scheduled | failed
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  // ── Creator page queue (migration 0009): written back when the Post maker
+  // publishes or schedules through Meta. All nullable; older rows are untouched.
+  pillarId    String?
+  metaPostId  String?
+  scheduledAt DateTime?
+  publishedAt DateTime?
+  error       String?
+
+  @@unique([musingId, platform])
+  @@index([status, createdAt])
+}
+
+// ───────── EMAIL DRAFTS ─────────
+// Newsletters written by /creator/email from 1–3 published musings. Both
+// renderings are stored (html + text). No ESP is wired: status is tracked by
+// hand (proposed → ready → sent) and the HTML is copied out.
+model EmailDraft {
+  id        String   @id @default(cuid())
+  name      String
+  subject   String
+  preheader String   @default("")
+  html      String
+  text      String
+  pillarId  String?
+  musingIds String[] @default([])
+  status    String   @default("proposed") // proposed | ready | sent
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+}
+
+// ───────── LIBRARY TAGS ─────────
+// Creator-page enrichment for an existing image, keyed by its site path
+// (`/assets/…`). No bytes live here — the images stay where they are (public/
+// or Photo.img). Seeded from the 93 master-Creator-page assets; editable later.
+model LibraryTag {
+  src       String   @id
+  title     String?
+  loc       String?
+  blurb     String?
+  pillarId  String?
+  messageId String?
+  inBook    Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+
+  @@index([pillarId])
+}
+
+// ───────── CREATOR PLAN (tool 9) — migration 0011 ─────────
+// The rhythm: how often posts / newsletter / email / leads / blog go out,
+// which days, how much the studio does on its own, and when the weekly plan
+// arrives. `settings` is PlanSettings JSON (src/lib/creator/plan.ts).
+model CreatorPlan {
+  id        String   @id @default("default")
+  settings  Json     @default("{}")
+  updatedAt DateTime @updatedAt
+}
+
+/// One row per week (Monday 00:00 Mountain, stored as UTC instant): the plan
+/// built from CreatorPlan on Monday at noon and emailed. `items` is
+/// PlanItem[] JSON; the home screen (/creator) renders it.
+model WeeklyPlan {
+  id        String    @id @default(cuid())
+  weekStart DateTime  @unique
+  items     Json      @default("[]")
+  summary   String    @default("")
+  emailedTo String?
+  emailedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }

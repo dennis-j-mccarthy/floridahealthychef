@@ -7,7 +7,7 @@ import path from "path";
 const useBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
 
 export async function saveUpload(
-  folder: "gallery" | "blog",
+  folder: "gallery" | "blog" | "studio",
   fileName: string,
   buffer: Buffer,
   contentType: string
